@@ -2,28 +2,18 @@
 // noteBoxClock (line 385) and serverNowSec (line 382).
 //
 // The page runs on the box and talks to the same origin; the app talks to whichever box is selected, so the base URL is given
-// (http://192.168.1.50). The rest is the page's: the session id travels in a header named `sid`, and cookies are never used. Pi-hole sets
+// (http://192.168.1.50), and every request first passes the host rule (src/api/hosts.ts): it goes to a private IPv4 address or nowhere.
+// The rest is the page's: the session id travels in a header named `sid`, and cookies are never used. Pi-hole sets
 // a `sid` cookie on every signed-in answer, and a request that carries that cookie without the header counts as a cookie sign-in, which
 // then needs a CSRF token for anything but a read. So every request goes with credentials: 'omit', which in both of React Native's fetch
 // implementations (Expo's, the default from SDK 52, and React Native's own) means no cookie is sent and none is stored, and no Cookie
 // header is ever set by hand (test/api/cookies.test.ts proves it against the mock box, which sets the cookie like Pi-hole).
 import { timing } from '../core/box';
 import { t } from '../i18n';
+import { ApiError } from './errors';
+import { createHostGuard, type HostGuard } from './hosts';
 
-/**
- * app.js ApiError (line 427): `status` is the HTTP status (0 = the box did not answer: no connection, a timeout, an answer cut off), `message`
- * is for people, `body` the parsed answer ({} when it was not JSON), so callers can read body.error.message and body.session.
- */
-export class ApiError extends Error {
-  status: number;
-  body: unknown;
-  constructor(status: number, message: string, body?: unknown) {
-    super(message);
-    this.name = 'ApiError';
-    this.status = status;
-    this.body = body === undefined ? {} : body;
-  }
-}
+export { ApiError } from './errors';
 
 /** app.js CLOCK_STEP_MS (line 354): the box's clock moving by more than this between two answers is a jump. */
 export const CLOCK_STEP_MS = 30000;
@@ -83,12 +73,21 @@ export interface CallOptions {
 }
 
 export interface ClientConfig {
-  /** The selected box, e.g. http://192.168.1.50 (no trailing slash). */
+  /** The selected box as it was found or typed, e.g. http://192.168.1.50 or http://sinko.local (no trailing slash). */
   baseUrl: () => string;
   /** The current session id, '' when signed out. */
   sid: () => string;
-  /** A 401 without quiet401: the session is gone (app.js endSession). */
-  onSessionEnded?: () => void;
+  /**
+   * A 401 without quiet401, for a request that went with the current session (`failedSid`): may sign in again without asking (Keep me
+   * signed in). Resolves true when there is a new session; the request is then sent once more with it, and only once.
+   */
+  renewSession?: (failedSid: string) => Promise<boolean>;
+  /** A 401 without quiet401 that was not renewed: the session `failedSid` is gone (app.js endSession). */
+  onSessionEnded?: (failedSid: string) => void;
+  /** Every request's outcome: the HTTP status, or 0 when the box did not answer. */
+  onAnswer?: (status: number) => void;
+  /** The host rule (src/api/hosts.ts): every request goes to the address it allows, or not at all. */
+  hosts?: HostGuard;
   clock?: BoxClock;
   fetch?: typeof fetch;
 }
@@ -103,10 +102,12 @@ export interface Client {
   clock: BoxClock;
 }
 
-/** One box's client: call() as in app.js, against `baseUrl()`, with its own clock. */
+/** One box's client: call() as in app.js, against `baseUrl()` (through the host rule), with its own clock. */
 export function createClient(config: ClientConfig): Client {
   const clock = config.clock || new BoxClock();
+  const hosts = config.hosts || createHostGuard();
   const doFetch = config.fetch || ((input: RequestInfo, init?: RequestInit) => fetch(input, init));
+  const answered = (status: number) => { if (config.onAnswer) config.onAnswer(status); };
 
   async function call<T = unknown>(method: string, path: string, options?: CallOptions): Promise<T> {
     const opts = options || {};
@@ -114,45 +115,56 @@ export function createClient(config: ClientConfig): Client {
     let payload: BodyInit | undefined;
     if (opts.form) payload = opts.form;
     else if (opts.body !== undefined) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(opts.body); }
-    const useSid = opts.sid !== undefined ? opts.sid : (opts.noSid ? '' : config.sid());
-    if (useSid) headers.sid = useSid;
     if (isBoxFile(path)) { headers['Cache-Control'] = 'no-cache'; headers.Pragma = 'no-cache'; }
+    const ownSession = opts.sid === undefined && !opts.noSid;
 
-    const ms = opts.timeoutMs === undefined ? DEFAULT_TIMEOUT_MS : opts.timeoutMs;
-    const abort = ms ? new AbortController() : null;
-    const timer = abort ? setTimeout(() => abort.abort(), ms as number) : null;
-    try {
-      let r: Response;
+    async function send(renewed: boolean): Promise<T> {
+      const useSid = opts.sid !== undefined ? opts.sid : (opts.noSid ? '' : config.sid());
+      if (useSid) headers.sid = useSid; else delete headers.sid;
+      const origin = await hosts.origin(config.baseUrl());         // HostRefused (status 0): nothing is sent
+      const ms = opts.timeoutMs === undefined ? DEFAULT_TIMEOUT_MS : opts.timeoutMs;
+      const abort = ms ? new AbortController() : null;
+      const timer = abort ? setTimeout(() => abort.abort(), ms as number) : null;
       try {
-        r = await doFetch(config.baseUrl() + path, {
-          method, headers, body: payload, credentials: 'omit', cache: 'no-store', signal: abort ? abort.signal : undefined,
-        });
-      } catch {
-        throw new ApiError(0, t('noConnection'));
+        let r: Response;
+        try {
+          r = await doFetch(origin + path, {
+            method, headers, body: payload, credentials: 'omit', cache: 'no-store', signal: abort ? abort.signal : undefined,
+          });
+        } catch {
+          answered(0);
+          throw new ApiError(0, t('noConnection'));
+        }
+        clock.noteDate(r.headers.get('Date'));
+        if (opts.blob && r.ok) {
+          try { const blob = await r.blob(); answered(r.status); return { blob } as T; } catch { answered(0); throw new ApiError(0, t('noConnection')); }
+        }
+        let txt: string;
+        try { txt = await r.text(); } catch { answered(0); throw new ApiError(0, t('noConnection')); }     // the answer was cut off (FTL restarting)
+        answered(r.status);
+        let j: unknown = {};
+        try { j = txt ? JSON.parse(txt) : {}; } catch { j = {}; }
+        if (r.status === 401) {
+          if (!opts.quiet401) {
+            if (ownSession && !renewed && config.renewSession && await config.renewSession(useSid).catch(() => false)) return send(true);
+            if (config.onSessionEnded) config.onSessionEnded(useSid);
+          }
+          throw new ApiError(401, t('sessionEnded'), j);
+        }
+        if (!r.ok) {
+          const e = (j as { error?: { message?: string; key?: string; hint?: string | null } } | null)?.error;
+          let m = e ? (e.message || e.key || String(e)) : ('HTTP ' + r.status);
+          if (e && e.hint) m += ' (' + e.hint + ')';
+          throw new ApiError(r.status, m, j);
+        }
+        if (opts.text) return { text: txt } as T;
+        return j as T;
+      } finally {
+        if (timer !== null) clearTimeout(timer);
       }
-      clock.noteDate(r.headers.get('Date'));
-      if (opts.blob && r.ok) {
-        try { return { blob: await r.blob() } as T; } catch { throw new ApiError(0, t('noConnection')); }
-      }
-      let txt: string;
-      try { txt = await r.text(); } catch { throw new ApiError(0, t('noConnection')); }     // the answer was cut off (FTL restarting)
-      let j: unknown = {};
-      try { j = txt ? JSON.parse(txt) : {}; } catch { j = {}; }
-      if (r.status === 401) {
-        if (!opts.quiet401 && config.onSessionEnded) config.onSessionEnded();
-        throw new ApiError(401, t('sessionEnded'), j);
-      }
-      if (!r.ok) {
-        const e = (j as { error?: { message?: string; key?: string; hint?: string | null } } | null)?.error;
-        let m = e ? (e.message || e.key || String(e)) : ('HTTP ' + r.status);
-        if (e && e.hint) m += ' (' + e.hint + ')';
-        throw new ApiError(r.status, m, j);
-      }
-      if (opts.text) return { text: txt } as T;
-      return j as T;
-    } finally {
-      if (timer !== null) clearTimeout(timer);
     }
+
+    return send(false);
   }
 
   return { call, clock };

@@ -10,6 +10,7 @@ import {
   type SinkoState,
 } from '../core';
 import { t } from '../i18n';
+import { stateWritable } from './compat';
 import { createStore, type Store } from './store';
 
 /** One app on the box: its catalog entry, its Pi-hole group, and whether children are kept from it now. */
@@ -31,7 +32,7 @@ export interface Model {
   learned: LearnedRule[];
 }
 
-/** A message the page would show as a toast. */
+/** A message the page would show as a toast. The view has it for as long as the page shows it. */
 export interface Notice { text: string; error: boolean; at: number }
 
 /** What the screens read. A new object whenever anything in it changes. */
@@ -60,6 +61,10 @@ export interface BoxSession {
   writeState(mutator: (st: SinkoState) => void): Promise<void>;
   /** The model as last loaded (app.js M). */
   model(): Model | null;
+  /** app.js toast (line 413): a message for the parent (the `notice` of the view). */
+  toast(text: string, error?: boolean): void;
+  /** A rule changed by a request of the caller's own: the next run() clears the DNS cache afterwards, as after putGroup and putClient. */
+  rulesChanged(): void;
 }
 
 export interface BoxSessionOptions {
@@ -67,6 +72,9 @@ export interface BoxSessionOptions {
   onLoaded?: () => void;
   now?: () => number;
 }
+
+/** How long app.js toast (line 419) shows a message (ms). */
+export const TOAST_MS = 2600, TOAST_ERROR_MS = 6000;
 
 /** app.js q (line 454). */
 function q(s: string): string { return encodeURIComponent(s); }
@@ -87,7 +95,14 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
   // marks the box dirty; after the action, one quick resolver restart empties the cache (app.js line 455).
   let rulesDirty = false;
 
-  function toast(text: string, error: boolean) { patch({ notice: { text, error, at: now() } }); }
+  /** app.js toast (line 413): the message stays 2.6 s, or 6 s when something went wrong, then the view has none. */
+  function toast(text: string, error: boolean) {
+    const notice = { text, error, at: now() };
+    patch({ notice });
+    const timer = setTimeout(() => { if (view.get().notice === notice) patch({ notice: null }); }, error ? TOAST_ERROR_MS : TOAST_MS);
+    const t0 = timer as unknown as { unref?: () => void };
+    if (typeof t0 === 'object' && t0 && t0.unref) t0.unref();          // Node (the tests): a message never keeps the process alive
+  }
 
   /**
    * app.js loadBoxInfo (line 477). /pb/box.json, read without signing in. An older box has no such file and every feature that needs it
@@ -124,7 +139,7 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
     const ok = [G.kids, G.offline, G.paused, G.state].every((n) => byName[n]);
     if (!ok) {
       M = null;
-      patch({ model: null, banner: t('notInstalled'), catalog, domainMap, boxInfo });
+      patch({ model: null, banner: t('waitBody'), catalog, domainMap, boxInfo });
       return null;
     }
     const cat = catalog;
@@ -182,6 +197,8 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
    * mutator does not touch, including the ones only the scheduler writes.
    */
   function writeState(mutator: (st: SinkoState) => void): Promise<void> {
+    // A box with a newer contract (box.json's api): writing back what this app can read would drop the keys it does not know (compat.ts).
+    if (!stateWritable(boxInfo)) return Promise.reject(new Error(t('appUpdateNeeded')));
     return call<{ groups?: Group[] }>('GET', '/api/groups/' + q(G.state)).then((j) => {
       const g = (j.groups || [])[0] || (M as Model).groups[G.state];
       const next = editState(g.comment, mutator);
@@ -209,5 +226,6 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
       .then(() => { busy = false; patch({ busy: false }); return load().then(() => {}, () => {}); });
   }
 
-  return { view, load, run, putGroup, putClient, flushDns, writeState, model: () => M };
+  return { view, load, run, putGroup, putClient, flushDns, writeState, model: () => M, toast: (text, error) => toast(text, !!error),
+    rulesChanged: () => { rulesDirty = true; } };
 }

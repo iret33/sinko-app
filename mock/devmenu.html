@@ -39,6 +39,13 @@
       <button data-post="/__dev__/client" data-body='{"ip":null}'>As the mock says</button>
     </div>
     <div class="row"><button data-post="/__dev__/devices/add" data-body='{"hwaddr":"aa:bb:cc:00:00:44","ip":"192.168.1.44","name":"new-tablet","macVendor":"Lenovo"}'>Add a new tablet</button></div>
+    <div class="row"><label>The router (the setup list ticks it when a device other than this phone asked within 7 days)</label></div>
+    <div class="row">
+      <button data-post="/__dev__/devices/touch" data-body='{"ago":691200}'>Every device quiet for 8 days</button>
+      <button data-post="/__dev__/devices/touch" data-body='{"hwaddr":"aa:bb:cc:00:00:02"}'>ali-galaxy asked just now</button>
+    </div>
+    <div class="row"><label>A query (Check this device: in the query log at once, lastQuery later)</label></div>
+    <div class="row"><input id="queryIp" placeholder="192.168.1.22" size="13"><button id="sendQuery">Asks the box now</button><button id="sendQueryTouch">and lastQuery</button></div>
   </section>
   <section>
     <h2>Updates</h2>
@@ -82,6 +89,26 @@
       <button data-post="/__dev__/seats" data-body='{"full":true}'>Too many sessions</button>
       <button data-post="/__dev__/seats" data-body='{"full":false}'>Seats free</button>
     </div>
+    <div class="row">
+      <button data-post="/__dev__/rate-limit" data-body='{"on":true}'>Too many wrong tries</button>
+      <button data-post="/__dev__/rate-limit" data-body='{"on":false}'>Tries allowed</button>
+    </div>
+    <div class="row"><label>Setup (open box)</label>
+      <button data-post="/__dev__/installed" data-body='{"done":false}'>not finished</button>
+      <button data-post="/__dev__/installed" data-body='{"done":true}'>finished</button>
+    </div>
+  </section>
+  <section>
+    <h2>box.json</h2>
+    <div class="row">
+      <button data-post="/__dev__/box-info" data-body='{"api":1,"boxId":"0123456789abcdef0123456789abcdef","hostname":"sinko"}'>Sinko 3.2 (api 1, boxId, hostname)</button>
+      <button data-post="/__dev__/box-info" data-body='{"api":null,"boxId":null,"hostname":null}'>Sinko 3.1 (none of them)</button>
+    </div>
+    <div class="row">
+      <button data-post="/__dev__/box-info" data-body='{"api":2}'>A newer contract (api 2)</button>
+      <button data-post="/__dev__/box-info" data-body='{"version":"3.0.4"}'>Version 3.0.4 (no learning)</button>
+      <button data-post="/__dev__/box-info" data-body='{"reset":true}'>As the mock says</button>
+    </div>
   </section>
   <section>
     <h2>Clock and scheduler</h2>
@@ -122,6 +149,12 @@
     var v = document.getElementById('touchAddr').value.trim();
     post('/__dev__/devices/touch', JSON.stringify(v.indexOf(':') >= 0 && v.split(':').length === 6 ? { hwaddr: v } : { ip: v }));
   };
+  function sendQuery(touch) {
+    var ip = document.getElementById('queryIp').value.trim() || '192.168.1.22';
+    post('/__dev__/queries/add', JSON.stringify({ ip: ip, domain: 'www.example.com', touch: touch }));
+  }
+  document.getElementById('sendQuery').onclick = function () { sendQuery(false); };
+  document.getElementById('sendQueryTouch').onclick = function () { sendQuery(true); };
   document.getElementById('setLatest').onclick = function () { post('/__dev__/scheduler', JSON.stringify({ latest: document.getElementById('latest').value.trim() })); };
   document.getElementById('setTotp').onclick = function () { post('/__dev__/totp', JSON.stringify({ code: document.getElementById('totp').value.trim() })); };
   refresh(); setInterval(refresh, 3000);

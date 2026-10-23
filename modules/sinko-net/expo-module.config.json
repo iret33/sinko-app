@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["SinkoNetModule"]
+  },
+  "android": {
+    "modules": ["bh.ioai.sinko.net.SinkoNetModule"]
+  }
+}

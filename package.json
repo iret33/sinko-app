@@ -17,16 +17,19 @@
     "lint": "eslint .",
     "check": "npm run typecheck && npm run lint && npm test",
     "sync-contract": "node scripts/sync-contract.mts",
-    "sync-strings": "node scripts/sync-strings.mts"
+    "sync-strings": "node scripts/sync-strings.mts",
+    "build-guides": "node scripts/build-guides.mts"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.17",
     "expo-build-properties": "~58.0.11",
+    "expo-clipboard": "~58.0.4",
     "expo-constants": "~58.0.13",
     "expo-dev-client": "~58.0.14",
     "expo-linking": "~58.0.14",
     "expo-localization": "~58.0.5",
+    "expo-network": "~58.0.4",
     "expo-router": "~58.0.25",
     "expo-secure-store": "~58.0.2",
     "expo-status-bar": "~58.0.4",
@@ -34,7 +37,8 @@
     "react-dom": "19.3.0",
     "react-native": "0.88.0",
     "react-native-safe-area-context": "~5.10.1",
-    "react-native-screens": "~4.30.0"
+    "react-native-screens": "~4.30.0",
+    "react-native-zeroconf": "^0.17.6"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",

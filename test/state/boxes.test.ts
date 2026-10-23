@@ -1,4 +1,4 @@
-// The boxes list and the session ids, with in-memory storage.
+// The boxes list, the session ids and the kept password, with in-memory storage.
 import assert from 'node:assert/strict';
 
 import { BOXES_KEY, createBoxesStore, createSessions, newBoxId, sameHost, type KeyValueStorage } from '../../src/state';
@@ -13,13 +13,13 @@ function memory(): KeyValueStorage & { data: Map<string, string> } {
   };
 }
 
-test('boxes: a list of {id, host, name, lastSeen} with one selected, saved and restored', async () => {
+test('boxes: a list of {id, host, name, lastSeen, boxId, hostname} with one selected, saved and restored', async () => {
   const storage = memory();
   let id = 0, now = 1000;
   const store = createBoxesStore(storage, { now: () => now, newId: () => 'box' + ++id });
   assert.deepEqual(await store.restore(), { boxes: [], activeId: null }, 'nothing saved yet');
   const a = await store.add(' 192.168.1.50 ', 'Home');
-  assert.deepEqual(a, { id: 'box1', host: '192.168.1.50', name: 'Home', lastSeen: 0 });
+  assert.deepEqual(a, { id: 'box1', host: '192.168.1.50', name: 'Home', lastSeen: 0, boxId: '', hostname: '' });
   assert.equal(store.active()?.id, 'box1', 'the first box is the selected one');
   const b = await store.add('127.0.0.1:8080');
   assert.equal(store.active()?.id, 'box1', 'a second box does not take over');
@@ -53,6 +53,28 @@ test('boxes: a damaged saved list is an empty one, and a damaged entry is droppe
   assert.equal(s.activeId, 'ok', 'a selected box that is gone falls back to the first');
 });
 
+test('boxes: a box with the same boxId is the same box at a new address; one saved before boxId existed is read as having none', async () => {
+  const storage = memory();
+  let id = 0;
+  const store = createBoxesStore(storage, { newId: () => 'box' + ++id });
+  await store.restore();
+  const boxId = '0123456789abcdef0123456789abcdef';
+  const a = await store.add('192.168.1.50', 'sinko', { boxId, hostname: 'sinko' });
+  assert.deepEqual(a, { id: 'box1', host: '192.168.1.50', name: 'sinko', lastSeen: 0, boxId, hostname: 'sinko' });
+  const moved = await store.add('192.168.1.77', 'sinko', { boxId, hostname: 'sinko' });
+  assert.equal(moved.id, 'box1', 'the router gave it a new address: the same box');
+  assert.equal(moved.host, '192.168.1.77');
+  assert.equal(store.state.get().boxes.length, 1, 'not added twice');
+  const other = await store.add('192.168.1.77', '', { boxId: 'ffffffffffffffffffffffffffffffff' });
+  assert.equal(other.id, 'box1', 'another boxId at the same address: still the box saved there (the boxId says it was replaced)');
+  assert.equal(other.boxId, 'ffffffffffffffffffffffffffffffff');
+  const third = await store.add('192.168.1.80');
+  assert.equal(third.id, 'box2');
+  storage.data.set(BOXES_KEY, JSON.stringify({ boxes: [{ id: 'old', host: '192.168.1.50', name: '', lastSeen: 5 }], activeId: 'old' }));
+  const restored = await createBoxesStore(storage).restore();
+  assert.deepEqual(restored.boxes, [{ id: 'old', host: '192.168.1.50', name: '', lastSeen: 5, boxId: '', hostname: '' }]);
+});
+
 test('box ids are keychain-safe, and hosts compare without case, scheme or slash', () => {
   assert.match(newBoxId(), /^[0-9a-f]{16}$/);
   assert.ok(sameHost('Sinko.local', 'http://sinko.local/'));
@@ -77,4 +99,31 @@ test('sessions: one id per box, read at once from memory, kept in the secure sto
   await later.clear('a');
   assert.equal(later.sid('a'), '');
   assert.equal(data.size, 0);
+});
+
+test('Keep me signed in: the password is kept this-device-only, off until asked, and forgotten on request', async () => {
+  const data = new Map<string, string>();
+  const used: (number | undefined)[] = [];
+  const secure = {
+    getItemAsync: async (k: string, o?: { keychainAccessible?: number }) => { used.push(o?.keychainAccessible); return data.get(k) ?? null; },
+    setItemAsync: async (k: string, v: string, o?: { keychainAccessible?: number }) => { used.push(o?.keychainAccessible); data.set(k, v); },
+    deleteItemAsync: async (k: string, o?: { keychainAccessible?: number }) => { used.push(o?.keychainAccessible); data.delete(k); },
+  };
+  const THIS_DEVICE_ONLY = 77;          // expo-secure-store's AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY in the app
+  const s = createSessions(secure, THIS_DEVICE_ONLY);
+  await s.restore('a');
+  assert.equal(s.kept.get().a, false, 'off by default');
+  assert.equal(await s.password('a'), '');
+  await s.set('a', 'sid1');
+  await s.keep('a', 'hunter22');
+  assert.equal(s.kept.get().a, true);
+  assert.equal(data.get('sinko.pw.a'), 'hunter22');
+  const later = createSessions(secure, THIS_DEVICE_ONLY);
+  await later.restore('a');
+  assert.equal(later.kept.get().a, true, 'it survives a restart of the app');
+  assert.equal(await later.password('a'), 'hunter22');
+  await later.keep('a', null);
+  assert.equal(later.kept.get().a, false);
+  assert.ok(!data.has('sinko.pw.a'));
+  assert.ok(used.length > 0 && used.every((o) => o === THIS_DEVICE_ONLY), 'every read and write says: this device only, never synced');
 });

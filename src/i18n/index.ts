@@ -1,10 +1,13 @@
-// The words of the app, in English and Arabic. They are the parent page's own (src/i18n/sinko-strings.json, copied from Sinko by
-// `npm run sync-strings`), so the app says what the page says. No React here: the API client uses it too.
+// The words of the app, in English and Arabic: every one is in en.ts and ar.ts, which start from the parent page's own
+// (src/i18n/sinko-strings.json, copied from Sinko by `npm run sync-strings`), so the app says what the page says. No React here: the API
+// client uses it too.
+import { ar } from './ar';
+import { en } from './en';
 import strings from './sinko-strings.json';
 
 export type Lang = 'en' | 'ar';
 type Table = Record<string, unknown>;
-const STR = { en: strings.en as Table, ar: strings.ar as Table };
+const STR: Record<Lang, Table> = { en, ar };
 
 let lang: Lang = 'en';
 const listeners = new Set<(l: Lang) => void>();

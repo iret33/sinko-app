@@ -9,9 +9,13 @@ neither of them does, so nobody mistakes a pass against the mock for a pass agai
 | What | How | Dev endpoint |
 |---|---|---|
 | `Set-Cookie: sid=…` | On the sign-in answer and on every signed-in answer (`SameSite=Strict; Path=/; Max-Age=1800; HttpOnly`), deleted on sign-out, like FTL. A request with the cookie and no `sid` header is a cookie sign-in: reads work, anything else is `401` (no CSRF token). Every request that carries a cookie is counted and logged. | `GET /__dev__/status`, `GET /__dev__/cookie-probe` |
-| Two-factor errors | With a code switched on: `400 {"error":{"message":"No 2FA token found in JSON payload"}}` when the code is missing, `401` with only `{"error":{"message":"Invalid 2FA token"}}` when it is wrong, and `session.totp: true` in the answers that carry a session. The mock answers both with a session object. | `POST /__dev__/totp {"code":"123456"}` / `{"code":null}` |
+| Two-factor errors | With a code switched on: `400 {"error":{"message":"No 2FA token found in JSON payload"}}` when the code is missing, `401` with only `{"error":{"message":"Invalid 2FA token"}}` when it is wrong and `"Reused 2FA token"` when it was accepted once already (a new code from the dev menu is fresh), and `session.totp: true` in every answer that carries a session, as FTL answers (`src/api/auth.c`). | `POST /__dev__/totp {"code":"123456"}` / `{"code":null}` |
 | Too many sessions | `429 api_seats_exceeded` for every sign-in while switched on. | `POST /__dev__/seats {"full":true}` |
+| Too many wrong tries | `429 rate_limiting` "Rate-limiting login attempts" for every sign-in while switched on. | `POST /__dev__/rate-limit {"on":true}` |
+| box.json of other versions | Any field of `/pb/box.json` set or taken out: Sinko 3.2's `api`, `boxId` and `hostname` (which the mock of a Sinko checkout older than `ec04916a` lacks), a newer contract (`api: 2`), another `version`. | `POST /__dev__/box-info {"boxId":"…","api":2}` / `{"api":null}` / `{"reset":true}` |
+| Setup not finished | `GET /api/groups` shows no `pb-*` group, as on a ready-made box during its first start (with `--open`: the app waits instead of offering the claim). | `POST /__dev__/installed {"done":false}` |
 | Devices that asked just now | Moves a device's `lastQuery` (by MAC or address, or all of them) to the box's now, minus `ago` seconds; adds devices to the network table. | `POST /__dev__/devices/touch {"hwaddr"?, "ip"?, "ago"?}`, `POST /__dev__/devices/add {"hwaddr","ip","name"?,"macVendor"?}` |
+| A device asks the box something | A query from that address is in `/api/queries` at once (merged into the mock's own log, newest first, with `from`, `until` and `length`), stamped on the box's clock minus `ago` seconds. Like FTL, the device's `lastQuery` does not move with it; `touch: true` moves it too. | `POST /__dev__/queries/add {"ip", "domain"?, "status"?, "ago"?, "touch"?}` |
 | `/api/info/client` | Answers any address (the mock always says `192.168.1.21`, a child's iPad). | `POST /__dev__/client {"ip":"192.168.1.9"}` / `{"ip":null}` |
 | Timers and bedtime | `bin/sinko Controller.tick`: a timer that is over restores the rules saved with it, bedtime switches the internet off and on, on the box's wall clock (box.json's `utcOffset`, `+03:00`), every 5 s and on demand. | `POST /__dev__/tick`, `POST /__dev__/scheduler {"tickSeconds":…}` |
 | Update and check requests | The request protocol (store the marker, clear it, act), 1 s after the app writes the state. Update: `ok`, `failed` (with `rolledBack` true, false or null and an `error`), `never` (never picked up), `hang` (running for ever), and seconds of silence while it installs. Check: finds the version on offer, or "the box is offline" (nothing changes). A successful update changes `/pb/version.txt` and box.json's `version`. | `POST /__dev__/scheduler {"latest":"3.2.0","update":{…},"check":{…}}` |
@@ -29,21 +33,26 @@ A dev menu with buttons for all of this is at `http://127.0.0.1:8080/__dev__/`.
   `/api/auth/sessions`, no application password and no CSRF token (`csrf` is `null`), so a cookie sign-in can never write.
 - The two-factor code is a fixed six digits set in the dev menu, not a TOTP. A code that is not a number is treated as wrong (FTL's own
   answer for that case was not checked).
-- No delay or lock-out after wrong passwords. "Too many sessions" is a switch, not a count of open sessions.
+- No delay or lock-out after wrong passwords, and no rate limit on codes: "too many wrong tries" and "too many sessions" are switches, not
+  counts. FTL's own answer to too many codes ("Rate-limiting 2FA token requests") is not imitated.
+- FTL 6.8's rule for a box without a password (it answers as open only for a `Host` that is an address or one of its own names, and 401
+  for any other name) is not imitated: the mock is open by every name. The app always talks to the address, which FTL accepts.
 
 **The network and the box**
+- No Bonjour announcement (`_sinko._tcp`): see README.md for announcing the mock box with `dns-sd` to test it.
 - http only: Pi-hole v6 also serves https on 443 with a self-signed certificate. No mDNS (`sinko.local`), no DNS: the app is pointed at an
   address. The mock listens on 127.0.0.1 only; the proxy can listen on every interface (`npm run mock -- --host 0.0.0.0`) for a real phone.
 - One HTTP/1.0 answer per connection. Streamed answers (`POST /api/action/gravity`) are read whole by the proxy and passed on at once,
   and the mock's rebuild takes no time.
 - No ETag or `304` on files, no Content-Security-Policy header (the mock has them only behind switches that have no HTTP endpoint).
-- The skewed clock moves only the `Date` header, box.json and the scheduler: `lastQuery`, the query log, `/api/history` and the uptime stay
-  on this computer's clock.
+- The skewed clock moves only the `Date` header, box.json, the scheduler and what the dev endpoints write (`devices/touch`, `queries/add`): the
+  mock's own `lastQuery` times, its own query log, `/api/history` and the uptime stay on this computer's clock.
 
 **DNS and filtering**
 - Nothing is filtered. With `--live`, a child's query for an app is answered `GRAVITY` while that app's group is enabled, but the mock
   ignores client groups, `pb-offline`, `pb-paused` and the `^.*$` rule: an offline or paused child still shows normal traffic.
-- `lastQuery` of a device never moves by itself, not even with `--live` traffic: only the dev endpoint moves it.
+- `lastQuery` of a device never moves by itself, not even with `--live` traffic or a query sent from the dev menu: only `devices/touch` (or
+  `queries/add` with `touch`) moves it. FTL writes it now and then, a while after the query.
 - Privacy levels, the hidden per-client history, failing `/api/info/*` calls, temperature, memory and the like are switches of the mock's
   `Store` with no HTTP endpoint, so they cannot be changed while it runs.
 
