@@ -2,7 +2,8 @@
 // (the connection does). Only after ten minutes does it point to the install guide.
 import { Linking } from 'react-native';
 
-import { locale, t } from '../i18n';
+import { t } from '../i18n';
+import { clockTime } from '../i18n/format';
 import { connection } from '../state/app';
 import { Button, Notice, Screen, Text } from '../ui';
 import { Top } from './common';
@@ -11,7 +12,7 @@ const GUIDE_AFTER_MS = 10 * 60000;
 export const INSTALL_GUIDE = 'https://github.com/iret33/sinko/blob/master/docs/install.md';
 
 export function Waiting({ since, checkedAt }: { since: number; checkedAt: number }) {
-  const time = new Date(checkedAt).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+  const time = clockTime(checkedAt);
   return (
     <Screen>
       <Top title={t('waitTitle')} sub={t('tagline')} />

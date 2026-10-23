@@ -4,7 +4,7 @@
 // The gate follows the page's boot (Sinko web/app.js boot, line 1382): no password yet and Sinko's groups there is the claim screen; no
 // password and no groups is "setup is not finished" (checked again every 30 s: a ready-made box makes its groups during its first start);
 // a password is the stored session when it still works, a silent sign-in when "Keep me signed in" is on, or the sign-in screen.
-import { ApiError, baseUrlFor, createClient, createHostGuard, setActiveClient, type Client, type HostGuard } from '../api';
+import { ApiError, baseUrlFor, createClient, createHostGuard, parseHost, setActiveClient, type Client, type HostGuard } from '../api';
 import { parseBoxInfo, type BoxInfo } from '../core/box';
 import { t } from '../i18n';
 import { boxAccess, claimBox, noPasswordSet, PROBLEM_TEXT, signInProblem, type AuthAnswer, type SignInProblem } from './auth';
@@ -71,6 +71,10 @@ export interface Connection {
   forgetPassword(): Promise<void>;
   /** Signing in to the selected box needs a 6-digit code (as last seen). */
   totp(): boolean;
+  /** The IPv4 address the selected box is reached at (its host, or what the host rule resolved its name to); '' when there is none. */
+  address(): Promise<string>;
+  /** The parent chose this box's password in this app a moment ago (the guided setup opens once, then): true once, then false. */
+  takeFreshClaim(boxId: string): boolean;
 }
 
 export interface ConnectionDeps {
@@ -102,6 +106,7 @@ export function createConnection(deps: ConnectionDeps): Connection {
   let lastSilentAt = 0;               // phone time the box last did not answer
   let endNote = '';                   // the note for the sign-in screen, set by what ended the session
   let retryTimer: unknown = null;
+  let freshClaim = '';                // the box whose password was chosen in this app, until the guided setup has opened for it
 
   function need(): { box: Box; client: Client } {
     const c = current.get();
@@ -301,6 +306,7 @@ export function createConnection(deps: ConnectionDeps): Connection {
     async claim(password, keep) {
       const { box, client } = need();
       const r = await claimBox(client, password);
+      if (r.kind === 'signedIn' || r.kind === 'savedOnly') freshClaim = box.id;
       if (r.kind === 'signedIn') {
         totp = r.totp;
         await sessions.set(box.id, r.sid);
@@ -348,6 +354,16 @@ export function createConnection(deps: ConnectionDeps): Connection {
       await sessions.keep(box.id, null);
     },
     totp: () => totp,
+    async address() {
+      const box = current.get().box;
+      const p = box ? parseHost(baseUrlFor(box.host)) : null;
+      return p ? hosts.address(p.host).catch(() => '') : '';
+    },
+    takeFreshClaim(boxId) {
+      if (!freshClaim || freshClaim !== boxId) return false;
+      freshClaim = '';
+      return true;
+    },
   };
 }
 

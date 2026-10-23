@@ -8,6 +8,7 @@
 //   sign-in 429s  "API seats exceeded" (every session taken) and "Rate-limiting login attempts" (too many wrong tries), each a switch.
 //   box.json      api, boxId and hostname (Sinko 3.2) can be set or taken away, and the Sinko groups hidden (setup not finished).
 //   devices       a device's lastQuery can be moved forward (and devices added), so the router and device checks can pass.
+//   queries       a device can ask the box something: the query is in /api/queries at once, and its lastQuery moves only when asked.
 //   scheduler     timers end and bedtime switches like bin/sinko Controller.tick, and update, check, restart and shut-down requests get the
 //                 outcome picked in the dev menu (mock/scheduler.mts).
 //   /api/info/client  can answer an address that is not a child's device.
@@ -29,6 +30,7 @@ const COOKIE_AGE = 1800;                      // Pi-hole's default webserver.ses
 
 type Dict = Record<string, unknown>;
 type Device = { hwaddr: string; macVendor?: string; lastQuery: number; ips: { ip: string; name: string | null }[]; [k: string]: unknown };
+type Query = { id: number; time: number; type: string; domain: string; status: string; client: { ip: string; name: string | null }; [k: string]: unknown };
 
 export interface ProxyOptions {
   /** The port of the mock Pi-hole. */
@@ -100,6 +102,8 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
   const endedSids = new Set<string>();
   const deviceTimes = new Map<string, number>();      // hwaddr or ip (lower case) -> lastQuery on the box's clock
   const extraDevices: Device[] = [];
+  const extraQueries: Query[] = [];                   // queries sent from the dev menu, newest last, merged into /api/queries
+  let queryIds = 1000000;                             // above the mock's own ids
   const cookieLog: { at: number; method: string; path: string; cookie: string }[] = [];
   let cookieRequests = 0, boxFileRequests = 0, boxFileFresh = 0;
 
@@ -139,6 +143,19 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
     return Buffer.from(JSON.stringify({ ...j, devices: list }));
   }
 
+  /** /api/queries with the dev menu's queries in it, filtered and ordered as FTL does: from/until on the query's time, newest first, length. */
+  function queries(body: Buffer, search: URLSearchParams): Buffer {
+    const j = JSON.parse(body.toString('utf8') || '{}') as { queries?: Query[]; cursor?: unknown; recordsTotal?: number; recordsFiltered?: number };
+    // Privacy level 3: the mock answers only { queries: [], cursor: null } (an empty log also has cursor null, but with its counts).
+    if (!extraQueries.length || (j.cursor === null && j.recordsTotal === undefined)) return body;
+    const from = Number(search.get('from') || 0), until = search.get('until') ? Number(search.get('until')) : Infinity;
+    const length = Math.max(1, Math.min(Number(search.get('length') || 100), 1000));
+    const extra = extraQueries.filter((q) => q.time >= from && q.time <= until);
+    const rows = (j.queries || []).concat(extra).sort((a, b) => b.id - a.id).slice(0, length);
+    return Buffer.from(JSON.stringify({ ...j, queries: rows, cursor: queryIds, recordsTotal: (j.recordsTotal || 0) + extraQueries.length,
+      recordsFiltered: (j.recordsFiltered || 0) + extra.length }));
+  }
+
   async function dev(req: http.IncomingMessage, res: http.ServerResponse, path: string, body: Buffer): Promise<void> {
     const send = (code: number, payload: unknown) => {
       const data = Buffer.from(JSON.stringify(payload, null, 1));
@@ -160,7 +177,7 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
         down: Date.now() < box.outageUntil ? (box.outageUntil === Infinity ? 'switched off' : Math.ceil((box.outageUntil - Date.now()) / 1000) + ' s') : null,
         log: scheduler.log.slice(-30), cookies: { requestsWithCookie: cookieRequests, recent: cookieLog.slice(-20) },
         boxFiles: { requests: boxFileRequests, askedFresh: boxFileFresh }, sessionsSeen: seenSids.size, sessionsEnded: endedSids.size,
-        devices: { times: Object.fromEntries(deviceTimes), added: extraDevices },
+        devices: { times: Object.fromEntries(deviceTimes), added: extraDevices }, queries: extraQueries.slice(-10),
       });
     }
     // The app's own proof that it stores no cookie: a request WITH credentials would carry one if it had been stored.
@@ -188,6 +205,18 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
           lastQuery: Math.floor(box.now() - (Number(b.ago) || 0)), numQueries: 1, ips: [{ ip: b.ip, name: typeof b.name === 'string' ? b.name : null }] };
         extraDevices.push(d);
         return send(200, { ok: true, device: d });
+      }
+      case '/__dev__/queries/add': {
+        // A device asks the box for `domain` (`ago` seconds before now on the box's clock). Like FTL, the query is in the log at once and the
+        // device's lastQuery does not move; { touch: true } moves it too.
+        if (typeof b.ip !== 'string' || !b.ip) return send(400, { error: 'ip is needed' });
+        const q: Query = { id: ++queryIds, time: box.now() - (Number(b.ago) || 0), type: 'A', domain: typeof b.domain === 'string' ? b.domain : 'example.com',
+          status: typeof b.status === 'string' ? b.status : 'FORWARDED', client: { ip: b.ip, name: typeof b.name === 'string' ? b.name : null },
+          dnssec: 'UNKNOWN', reply: { type: 'IP', time: 0.03 }, upstream: '1.1.1.3#53', list_id: null, cname: null, ede: { code: -1, text: null } };
+        extraQueries.push(q);
+        if (extraQueries.length > 2000) extraQueries.shift();
+        if (b.touch === true) deviceTimes.set(b.ip.toLowerCase(), Math.floor(q.time));
+        return send(200, { ok: true, query: q });
       }
       case '/__dev__/client':
         settings.clientIp = typeof b.ip === 'string' && b.ip ? b.ip : null;
@@ -326,6 +355,7 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
 
     if (a.status === 200 && method === 'GET') {
       if (path === '/api/network/devices') data = await devices(data);
+      else if (path === '/api/queries') data = queries(data, url.searchParams);
       else if (path === '/api/info/client' && settings.clientIp) data = Buffer.from(JSON.stringify({ ...(json(a) as Dict), remote_addr: settings.clientIp }));
       else if (path === '/pb/box.json') {
         const j = json(a) as Dict;

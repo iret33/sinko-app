@@ -15,6 +15,7 @@ neither of them does, so nobody mistakes a pass against the mock for a pass agai
 | box.json of other versions | Any field of `/pb/box.json` set or taken out: Sinko 3.2's `api`, `boxId` and `hostname` (which the mock of a Sinko checkout older than `ec04916a` lacks), a newer contract (`api: 2`), another `version`. | `POST /__dev__/box-info {"boxId":"…","api":2}` / `{"api":null}` / `{"reset":true}` |
 | Setup not finished | `GET /api/groups` shows no `pb-*` group, as on a ready-made box during its first start (with `--open`: the app waits instead of offering the claim). | `POST /__dev__/installed {"done":false}` |
 | Devices that asked just now | Moves a device's `lastQuery` (by MAC or address, or all of them) to the box's now, minus `ago` seconds; adds devices to the network table. | `POST /__dev__/devices/touch {"hwaddr"?, "ip"?, "ago"?}`, `POST /__dev__/devices/add {"hwaddr","ip","name"?,"macVendor"?}` |
+| A device asks the box something | A query from that address is in `/api/queries` at once (merged into the mock's own log, newest first, with `from`, `until` and `length`), stamped on the box's clock minus `ago` seconds. Like FTL, the device's `lastQuery` does not move with it; `touch: true` moves it too. | `POST /__dev__/queries/add {"ip", "domain"?, "status"?, "ago"?, "touch"?}` |
 | `/api/info/client` | Answers any address (the mock always says `192.168.1.21`, a child's iPad). | `POST /__dev__/client {"ip":"192.168.1.9"}` / `{"ip":null}` |
 | Timers and bedtime | `bin/sinko Controller.tick`: a timer that is over restores the rules saved with it, bedtime switches the internet off and on, on the box's wall clock (box.json's `utcOffset`, `+03:00`), every 5 s and on demand. | `POST /__dev__/tick`, `POST /__dev__/scheduler {"tickSeconds":…}` |
 | Update and check requests | The request protocol (store the marker, clear it, act), 1 s after the app writes the state. Update: `ok`, `failed` (with `rolledBack` true, false or null and an `error`), `never` (never picked up), `hang` (running for ever), and seconds of silence while it installs. Check: finds the version on offer, or "the box is offline" (nothing changes). A successful update changes `/pb/version.txt` and box.json's `version`. | `POST /__dev__/scheduler {"latest":"3.2.0","update":{…},"check":{…}}` |
@@ -44,13 +45,14 @@ A dev menu with buttons for all of this is at `http://127.0.0.1:8080/__dev__/`.
 - One HTTP/1.0 answer per connection. Streamed answers (`POST /api/action/gravity`) are read whole by the proxy and passed on at once,
   and the mock's rebuild takes no time.
 - No ETag or `304` on files, no Content-Security-Policy header (the mock has them only behind switches that have no HTTP endpoint).
-- The skewed clock moves only the `Date` header, box.json and the scheduler: `lastQuery`, the query log, `/api/history` and the uptime stay
-  on this computer's clock.
+- The skewed clock moves only the `Date` header, box.json, the scheduler and what the dev endpoints write (`devices/touch`, `queries/add`): the
+  mock's own `lastQuery` times, its own query log, `/api/history` and the uptime stay on this computer's clock.
 
 **DNS and filtering**
 - Nothing is filtered. With `--live`, a child's query for an app is answered `GRAVITY` while that app's group is enabled, but the mock
   ignores client groups, `pb-offline`, `pb-paused` and the `^.*$` rule: an offline or paused child still shows normal traffic.
-- `lastQuery` of a device never moves by itself, not even with `--live` traffic: only the dev endpoint moves it.
+- `lastQuery` of a device never moves by itself, not even with `--live` traffic or a query sent from the dev menu: only `devices/touch` (or
+  `queries/add` with `touch`) moves it. FTL writes it now and then, a while after the query.
 - Privacy levels, the hidden per-client history, failing `/api/info/*` calls, temperature, memory and the like are switches of the mock's
   `Store` with no HTTP endpoint, so they cannot be changed while it runs.
 

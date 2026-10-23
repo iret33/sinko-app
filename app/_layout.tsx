@@ -15,6 +15,7 @@ export default function RootLayout() {
       <StatusBar style="auto" />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="add-device" options={{ presentation: 'modal' }} />
       </Stack>
     </>
   );

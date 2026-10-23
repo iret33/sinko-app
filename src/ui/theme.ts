@@ -25,7 +25,7 @@ export const dark: Palette = {
 /** web/style.css --radius-xl, -lg, (default) and -sm. */
 export const radius = { xl: 26, lg: 22, md: 14, sm: 10 };
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 };
-export const type = { title: 24, heading: 17, body: 15, small: 13, mono: 12 };
+export const type = { title: 24, heading: 17, body: 15, small: 13, mono: 12, address: 32 };
 
 export function useTheme(): { c: Palette; scheme: 'light' | 'dark' } {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';

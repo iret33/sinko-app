@@ -7,3 +7,5 @@ export * from './poller';
 export * from './box';
 export * from './groups';
 export * from './addresses';
+export * from './setup';
+export * from './devices';

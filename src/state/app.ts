@@ -5,16 +5,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { reloadAppAsync } from 'expo';
 import { getLocales } from 'expo-localization';
 import * as SecureStore from 'expo-secure-store';
-import { I18nManager } from 'react-native';
+import { AppState, I18nManager } from 'react-native';
 
 import { lookupIpv4 } from '../../modules/sinko-net';
 import { createHostGuard, isDevBuild, setDefaultLookup } from '../api';
 import { createBoxesStore } from './boxes';
 import { createConnection } from './connection';
+import { createDeviceCheck, type DeviceCheck } from './deviceCheck';
 import { createDiscovery } from './discovery';
 import { createLanguage } from './language';
+import type { BoxSession } from './model';
 import { bonjour, localNetworkAccess, MOCK_HOST, network } from './native';
 import { createSessions } from './session';
+import { createSetup, type Setup } from './setup';
 
 setDefaultLookup(lookupIpv4);
 
@@ -40,6 +43,22 @@ export function newDiscovery() {
     saved: () => boxes.state.get().boxes,
     devHosts: isDevBuild() ? [MOCK_HOST] : [],
   });
+}
+
+const setups = new WeakMap<BoxSession, Setup>();
+/** The guided setup of the selected box (one per box session, shared by Home and the setup screens); null when no box is selected. */
+export function currentSetup(): Setup | null {
+  const { session, client } = connection.current.get();
+  if (!session || !client) return null;
+  let s = setups.get(session);
+  if (!s) { s = createSetup({ session, client, address: () => connection.address(), appState: AppState }); setups.set(session, s); }
+  return s;
+}
+
+/** A "Check this device" for the selected box. */
+export function newDeviceCheck(): DeviceCheck | null {
+  const client = connection.current.get().client;
+  return client ? createDeviceCheck({ call: client.call, clock: client.clock }) : null;
 }
 
 /** At start: the language (and its layout direction, which can restart the app), then the selected box. */

@@ -8,6 +8,7 @@ import { ar, appAr } from '../src/i18n/ar';
 import { appEn, en } from '../src/i18n/en';
 import strings from '../src/i18n/sinko-strings.json';
 import { getLang, guessLang, list, setLang, t } from '../src/i18n';
+import { fmtAgo, isolate, latinDigits, ltr } from '../src/i18n/format';
 import { PROBLEM_TEXT } from '../src/state/auth';
 
 const S = strings as unknown as { en: Record<string, unknown>; ar: Record<string, unknown> };
@@ -83,4 +84,18 @@ test('the phone\'s language picks Arabic or English', () => {
   assert.equal(guessLang('en-GB'), 'en');
   assert.equal(guessLang('fr'), 'en');
   assert.equal(guessLang(null), 'en');
+});
+
+test('numbers and addresses in Arabic: Latin digits whatever the engine writes, addresses and names kept whole', () => {
+  assert.equal(latinDigits('٣:٢٨:٢٣ م'), '3:28:23 م', 'Hermes ignores -u-nu-latn: the page writes Latin digits');
+  assert.equal(latinDigits('۱۲٫٥'), '12.5');
+  assert.equal(ltr('A4:83:E7:12:34:56'), '⁦A4:83:E7:12:34:56⁩', 'left to right, isolated from the Arabic around it');
+  assert.equal(isolate('Apple, Inc.'), '⁨Apple, Inc.⁩', 'a name keeps its own direction (it can be Arabic)');
+  assert.equal(ltr(''), '');
+  setLang('ar');
+  const ago = fmtAgo(1800000000 - 3 * 3600, 1800000000);
+  assert.ok(/3/.test(ago) && !/[٠-٩]/.test(ago), ago);
+  setLang('en');
+  assert.equal(fmtAgo(0, 1800000000), 'Not seen yet');
+  assert.equal(fmtAgo(1800000000 - 120, 1800000000), 'Last online 2 minutes ago', 'on the box\'s clock (app.js fmtAgo)');
 });

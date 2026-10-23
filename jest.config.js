@@ -7,4 +7,6 @@ module.exports = {
   transform: { '^.+\\.[jt]sx?$': ['babel-jest', { presets: ['babel-preset-expo'] }] },
   testTimeout: 30000,
   globals: { __DEV__: true },
+  // Pictures (the router guides' screenshots, bundled by Metro in the app) are a number in the tests.
+  moduleNameMapper: { '\\.(png|jpg)$': '<rootDir>/test/picture.js' },
 };

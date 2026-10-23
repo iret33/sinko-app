@@ -9,3 +9,5 @@ export * from './compat';
 export * from './connection';
 export * from './discovery';
 export * from './language';
+export * from './setup';
+export * from './deviceCheck';
