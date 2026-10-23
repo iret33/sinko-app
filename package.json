@@ -1,0 +1,48 @@
+{
+  "name": "sinko-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sinko for iPhone and Android: the parental controls of a Sinko box (Pi-hole v6)",
+  "main": "expo-router/entry",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "ios": "expo run:ios",
+    "android": "expo run:android",
+    "mock": "node mock/start.mts",
+    "test": "jest",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test && tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint .",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "sync-contract": "node scripts/sync-contract.mts",
+    "sync-strings": "node scripts/sync-strings.mts"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~58.0.17",
+    "expo-build-properties": "~58.0.11",
+    "expo-constants": "~58.0.13",
+    "expo-dev-client": "~58.0.14",
+    "expo-linking": "~58.0.14",
+    "expo-localization": "~58.0.5",
+    "expo-router": "~58.0.25",
+    "expo-secure-store": "~58.0.2",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0"
+  },
+  "devDependencies": {
+    "@types/jest": "30.0.0",
+    "@types/react": "~19.3.0",
+    "babel-preset-expo": "~58.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
+    "jest": "~30.5.2",
+    "typescript": "~6.0.3"
+  }
+}

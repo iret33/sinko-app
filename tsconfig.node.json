@@ -1,0 +1,17 @@
+{
+  "//": "The mock box and the sync scripts: plain Node (it strips the types itself), so only erasable TypeScript and explicit .mts imports.",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ESNext"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true
+  },
+  "include": ["mock/**/*.mts", "scripts/**/*.mts"]
+}

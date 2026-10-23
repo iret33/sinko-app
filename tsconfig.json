@@ -1,0 +1,13 @@
+{
+  "//": "The app (React Native). The tests have their own (test/tsconfig.json, with Jest and Node types); the mock box and scripts too (tsconfig.node.json). npm run typecheck runs all three.",
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true
+  },
+  "include": [
+    "app/**/*.ts",
+    "app/**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx"
+  ]
+}

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock box dev menu</title>
+<style>
+  :root { --ink:#17302E; --ink-2:#4D625F; --line:#D9E2DF; --page:#F1F4F2; --card:#FFFFFF; --lagoon:#0F766E; --coral:#C7432F; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#E3ECE9; --ink-2:#9DB0AC; --line:#26332F; --page:#0E1615; --card:#15201E; --lagoon:#2BA597; --coral:#F0735E; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; font: 15px/1.45 system-ui, -apple-system, sans-serif; color: var(--ink); background: var(--page); }
+  h1 { font-size: 20px; margin: 0 0 4px; } h2 { font-size: 15px; margin: 0 0 8px; }
+  p.lead { margin: 0 0 16px; color: var(--ink-2); }
+  main { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); max-width: 1200px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--page); color: var(--ink); border-radius: 10px; padding: 6px 10px; cursor: pointer; }
+  button.go { background: var(--lagoon); border-color: var(--lagoon); color: #fff; }
+  button.bad { border-color: var(--coral); color: var(--coral); }
+  input, select { font: inherit; padding: 5px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); min-width: 0; }
+  label { color: var(--ink-2); font-size: 13px; }
+  pre { margin: 0; font-size: 12px; white-space: pre-wrap; word-break: break-word; max-height: 420px; overflow: auto; }
+  #msg { min-height: 1.4em; color: var(--lagoon); margin: 0 0 12px; }
+</style>
+</head>
+<body>
+<h1>Mock box dev menu</h1>
+<p class="lead">Drives the development box the app talks to. Everything here is also a JSON endpoint under <code>/__dev__/</code>.</p>
+<p id="msg"></p>
+<main>
+  <section>
+    <h2>Devices</h2>
+    <div class="row"><button class="go" data-post="/__dev__/devices/touch" data-body="{}">Every device asked just now</button></div>
+    <div class="row"><input id="touchAddr" placeholder="aa:bb:cc:00:00:01 or 192.168.1.22"><button id="touchOne">Asked just now</button></div>
+    <div class="row"><label>This phone is (/api/info/client)</label></div>
+    <div class="row">
+      <button data-post="/__dev__/client" data-body='{"ip":"192.168.1.9"}'>A parent's phone (192.168.1.9)</button>
+      <button data-post="/__dev__/client" data-body='{"ip":"192.168.1.21"}'>Sara-iPad (192.168.1.21)</button>
+      <button data-post="/__dev__/client" data-body='{"ip":null}'>As the mock says</button>
+    </div>
+    <div class="row"><button data-post="/__dev__/devices/add" data-body='{"hwaddr":"aa:bb:cc:00:00:44","ip":"192.168.1.44","name":"new-tablet","macVendor":"Lenovo"}'>Add a new tablet</button></div>
+  </section>
+  <section>
+    <h2>Updates</h2>
+    <div class="row"><label>On offer</label><input id="latest" placeholder="3.2.0" size="8"><button id="setLatest">Set</button><button data-post="/__dev__/scheduler" data-body='{"latest":null}'>Up to date</button></div>
+    <div class="row"><label>Update now ends</label>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"ok"}}'>ok</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"failed","rolledBack":true}}'>failed, old version back</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"failed","rolledBack":false}}'>failed, not back</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"failed","rolledBack":null}}'>failed, not known</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"never"}}'>never starts</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outcome":"hang"}}'>hangs</button>
+    </div>
+    <div class="row"><label>Box silent while updating</label>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outageSeconds":0}}'>0 s</button>
+      <button data-post="/__dev__/scheduler" data-body='{"update":{"outageSeconds":20}}'>20 s</button>
+    </div>
+    <div class="row"><label>Check again</label>
+      <button data-post="/__dev__/scheduler" data-body='{"check":{"offline":false}}'>reaches GitHub</button>
+      <button data-post="/__dev__/scheduler" data-body='{"check":{"offline":true}}'>box is offline</button>
+    </div>
+  </section>
+  <section>
+    <h2>Restart and shut down</h2>
+    <div class="row">
+      <button data-post="/__dev__/scheduler" data-body='{"power":{"outcome":"act"}}'>The box acts</button>
+      <button data-post="/__dev__/scheduler" data-body='{"power":{"outcome":"ignore"}}'>The box does not react</button>
+    </div>
+    <div class="row"><label>After a restart</label>
+      <button data-post="/__dev__/scheduler" data-body='{"power":{"endSessions":false}}'>sessions kept</button>
+      <button data-post="/__dev__/scheduler" data-body='{"power":{"endSessions":true}}'>everyone signed out</button>
+    </div>
+    <div class="row">
+      <button class="bad" data-post="/__dev__/outage" data-body='{"seconds":30}'>Stop answering for 30 s</button>
+      <button class="go" data-post="/__dev__/power/plug-in" data-body="{}">Plug back in</button>
+    </div>
+  </section>
+  <section>
+    <h2>Sign-in</h2>
+    <div class="row"><label>Two-factor code</label><input id="totp" placeholder="123456" size="7"><button id="setTotp">On</button><button data-post="/__dev__/totp" data-body='{"code":null}'>Off</button></div>
+    <div class="row">
+      <button data-post="/__dev__/seats" data-body='{"full":true}'>Too many sessions</button>
+      <button data-post="/__dev__/seats" data-body='{"full":false}'>Seats free</button>
+    </div>
+  </section>
+  <section>
+    <h2>Clock and scheduler</h2>
+    <div class="row"><label>Box clock</label>
+      <button data-post="/__dev__/clock" data-body='{"skewSec":0}'>right</button>
+      <button data-post="/__dev__/clock" data-body='{"skewSec":10800}'>3 h ahead</button>
+      <button data-post="/__dev__/clock" data-body='{"skewSec":-90}'>90 s behind</button>
+    </div>
+    <div class="row"><label>box.json heartbeat</label>
+      <button data-post="/__dev__/heartbeat" data-body='{"ageSec":0}'>fresh</button>
+      <button data-post="/__dev__/heartbeat" data-body='{"ageSec":1500}'>25 min late</button>
+    </div>
+    <div class="row"><button class="go" data-post="/__dev__/tick" data-body="{}">Run a scheduler pass now</button><button data-post="/__dev__/reset-counters" data-body="{}">Reset counters</button></div>
+  </section>
+  <section style="grid-column: 1 / -1">
+    <h2>Status</h2>
+    <pre id="status">…</pre>
+  </section>
+</main>
+<script>
+  var msg = document.getElementById('msg');
+  function post(path, body) {
+    return fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { msg.textContent = path.replace('/__dev__/', '') + ': ' + (j.ok ? 'done' : JSON.stringify(j)); refresh(); })
+      .catch(function (e) { msg.textContent = String(e); });
+  }
+  function refresh() {
+    fetch('/__dev__/status').then(function (r) { return r.json(); }).then(function (j) {
+      document.getElementById('status').textContent = JSON.stringify(j, null, 2);
+    }).catch(function () {});
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('button[data-post]');
+    if (b) post(b.getAttribute('data-post'), b.getAttribute('data-body'));
+  });
+  document.getElementById('touchOne').onclick = function () {
+    var v = document.getElementById('touchAddr').value.trim();
+    post('/__dev__/devices/touch', JSON.stringify(v.indexOf(':') >= 0 && v.split(':').length === 6 ? { hwaddr: v } : { ip: v }));
+  };
+  document.getElementById('setLatest').onclick = function () { post('/__dev__/scheduler', JSON.stringify({ latest: document.getElementById('latest').value.trim() })); };
+  document.getElementById('setTotp').onclick = function () { post('/__dev__/totp', JSON.stringify({ code: document.getElementById('totp').value.trim() })); };
+  refresh(); setInterval(refresh, 3000);
+</script>
+</body>
+</html>
