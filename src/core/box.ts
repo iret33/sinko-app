@@ -1,8 +1,8 @@
 // The pure logic behind Sinko's "My box" sheet: what the update card shows, the plain-words readings of the box, the addresses, the
 // password rules, what a restore keeps, and the timings the sheet waits for.
 //
-// Port of Sinko web/pb-box.js: every function exported there as PBBox.pure (lines 598-606), PBBox.timing (lines 610-615) and requestTime
-// (line 646, private there; here it takes the box's clock as an argument).
+// Port of Sinko web/pb-box.js: every function exported there as PBBox.pure (lines 604-612), PBBox.timing (lines 616-621) and requestTime
+// (line 652, private there; here it takes the box's clock as an argument).
 import type { SinkoState, UpdateState } from './types';
 
 // ------------------------------------------------------------------ constants (pb-box.js lines 264-286)
@@ -214,12 +214,17 @@ export function usableIpv4(v: unknown): string {
   return v;
 }
 
-/** /pb/box.json, parsed and checked. */
-export interface BoxInfo { version: string; ip: string; tz: string; utcOffset: string; counter: boolean; mdns: boolean; at: number }
+/** /pb/box.json, parsed and checked. `api`, `boxId` and `hostname` are additions of Sinko 3.2: 0 or '' on an older box. */
+export interface BoxInfo {
+  api: number; version: string; boxId: string; hostname: string; ip: string; tz: string; utcOffset: string; counter: boolean; mdns: boolean; at: number;
+}
 
 /**
- * pb-box.js parseBoxInfo (line 475). /pb/box.json as the box program writes it: { "v":1, "version", "ip", "tz", "utcOffset", "counter",
- * "mdns", "at" }. Anything that is not that shape is a missing file (null), and every field is checked on its own.
+ * pb-box.js parseBoxInfo (line 477). /pb/box.json as the box program writes it: { "v":1, "api", "version", "boxId", "hostname", "ip", "tz",
+ * "utcOffset", "counter", "mdns", "at" } (api, boxId and hostname since 3.2, so an older box has none of them). Anything that is not that
+ * shape is a missing file (null), and every field is checked on its own: a wrong or missing one costs only what it was for. `api` is a whole
+ * number from 1 or 0, `boxId` 32 small hex digits or '', `hostname` one name label in small letters (the box answers to <hostname>.local)
+ * or ''.
  */
 export function parseBoxInfo(raw: unknown): BoxInfo | null {
   const r = raw as Record<string, unknown> | null | undefined;
@@ -228,15 +233,19 @@ export function parseBoxInfo(raw: unknown): BoxInfo | null {
   const off = typeof r.utcOffset === 'string' && UTC_OFFSET.test(r.utcOffset) ? r.utcOffset : '';
   const at = typeof r.at === 'number' && isFinite(r.at) && Math.floor(r.at) === r.at && r.at > 0 ? r.at : 0;
   const ver = typeof r.version === 'string' && /^\d{1,4}\.\d{1,4}\.\d{1,4}$/.test(r.version) ? r.version : '';
-  return { version: ver, ip: usableIpv4(r.ip), tz, utcOffset: off, counter: r.counter === true, mdns: r.mdns === true, at };
+  const api = typeof r.api === 'number' && Math.floor(r.api) === r.api && r.api >= 1 && r.api <= 9999 ? r.api : 0;
+  const id = typeof r.boxId === 'string' && /^[0-9a-f]{32}$/.test(r.boxId) ? r.boxId : '';
+  const host = typeof r.hostname === 'string' && LABEL.test(r.hostname) && r.hostname === r.hostname.toLowerCase() ? r.hostname : '';
+  return { api, version: ver, boxId: id, hostname: host, ip: usableIpv4(r.ip), tz, utcOffset: off, counter: r.counter === true,
+    mdns: r.mdns === true, at };
 }
 
-/** pb-box.js heartbeatLate (line 485): box.json's `at` is more than 20 minutes behind the box's clock `nowSec`, so the scheduler is not running. */
+/** pb-box.js heartbeatLate (line 491): box.json's `at` is more than 20 minutes behind the box's clock `nowSec`, so the scheduler is not running. */
 export function heartbeatLate(info: BoxInfo | null | undefined, nowSec: unknown): boolean {
   return !!(info && info.at && typeof nowSec === 'number' && nowSec - info.at > HEARTBEAT_LATE_SEC);
 }
 
-/** pb-box.js offsetMinutes (line 489). */
+/** pb-box.js offsetMinutes (line 495). */
 function offsetMinutes(text: string | null | undefined): number | null {
   const m = UTC_OFFSET.exec(text || '');
   return m ? (m[1] === '-' ? -1 : 1) * (+m[2] * 60 + +m[3]) : null;
@@ -244,7 +253,7 @@ function offsetMinutes(text: string | null | undefined): number | null {
 
 export type ZoneInfo = { kind: 'unknown' } | { kind: 'utc' } | { kind: 'zone'; label: string; differs: boolean | null };
 /**
- * pb-box.js zoneInfo (line 501). What to tell the parent about the box's time zone, from box.json and the phone's offset (minutes east of
+ * pb-box.js zoneInfo (line 507). What to tell the parent about the box's time zone, from box.json and the phone's offset (minutes east of
  * UTC; null when unknown). Only a zone that is named UTC counts as UTC: an offset of +00:00 alone is also London in winter.
  */
 export function zoneInfo(info: BoxInfo | null | undefined, phoneOffsetMin: unknown): ZoneInfo {
@@ -256,7 +265,7 @@ export function zoneInfo(info: BoxInfo | null | undefined, phoneOffsetMin: unkno
   return { kind: 'zone', label: parts.join(', '), differs: off === null || typeof phoneOffsetMin !== 'number' ? null : off !== phoneOffsetMin };
 }
 
-/** pb-box.js boxWallTime (line 511): the time of day on the box's own wall clock; '' when the offset is not known. */
+/** pb-box.js boxWallTime (line 517): the time of day on the box's own wall clock; '' when the offset is not known. */
 export function boxWallTime(info: BoxInfo | null | undefined, epochSec: number, locale?: string): string {
   const off = info ? offsetMinutes(info.utcOffset) : null;
   if (off === null || !isFinite(epochSec)) return '';
@@ -265,7 +274,7 @@ export function boxWallTime(info: BoxInfo | null | undefined, epochSec: number, 
 }
 
 /**
- * pb-box.js reasonDetails (line 522): the English technical reason of a failed update, for "details for whoever helps you"; '' when there is
+ * pb-box.js reasonDetails (line 528): the English technical reason of a failed update, for "details for whoever helps you"; '' when there is
  * nothing to show or when it looks like something to type.
  */
 export function reasonDetails(error: unknown): string {
@@ -275,7 +284,7 @@ export function reasonDetails(error: unknown): string {
 }
 
 /**
- * pb-box.js restoreVerdict (line 534): whether Pi-hole took anything from a restored file, from its answer to POST /api/teleporter.
+ * pb-box.js restoreVerdict (line 540): whether Pi-hole took anything from a restored file, from its answer to POST /api/teleporter.
  * 'nothing' only when the answer lists what it processed and the group table is not among it.
  */
 export function restoreVerdict(answer: unknown): 'ok' | 'nothing' {
@@ -285,7 +294,7 @@ export function restoreVerdict(answer: unknown): 'ok' | 'nothing' {
 }
 
 /**
- * pb-box.js gravityVerdict (line 546): how a rebuild of the block lists ended, from the text FTL streamed. 'ok' when it shows at least one
+ * pb-box.js gravityVerdict (line 552): how a rebuild of the block lists ended, from the text FTL streamed. 'ok' when it shows at least one
  * success mark and no failure line, else 'partial'. Escape sequences go, and a carriage return counts as a line break.
  */
 export function gravityVerdict(text: unknown): 'ok' | 'partial' {
@@ -294,9 +303,9 @@ export function gravityVerdict(text: unknown): 'ok' | 'partial' {
   return /\[✓\]/.test(s) ? 'ok' : 'partial';
 }
 
-/** pb-box.js charCount (line 552). */
+/** pb-box.js charCount (line 558). */
 function charCount(s: unknown): number { return String(s).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, 'x').length; }
-/** pb-box.js passwordProblem (line 554): the string key of the first problem with a new password, or null. */
+/** pb-box.js passwordProblem (line 560): the string key of the first problem with a new password, or null. */
 export function passwordProblem(current: string, next: string, again: string): 'boxPwShort' | 'boxPwMismatch' | 'boxPwSame' | null {
   if (charCount(next) < MIN_PASSWORD) return 'boxPwShort';
   if (next !== again) return 'boxPwMismatch';
@@ -305,7 +314,7 @@ export function passwordProblem(current: string, next: string, again: string): '
 }
 
 /**
- * pb-box.js keepBoxFields (line 567). After a restore the stored state is the BACKUP's: this returns the mutator that puts back what belongs
+ * pb-box.js keepBoxFields (line 573). After a restore the stored state is the BACKUP's: this returns the mutator that puts back what belongs
  * to the box and not to the family's rules; the timer, bedtime and whether bedtime is on right now come from the backup.
  */
 export function keepBoxFields(before: SinkoState): (st: SinkoState) => void {
@@ -315,9 +324,9 @@ export function keepBoxFields(before: SinkoState): (st: SinkoState) => void {
   };
 }
 
-/** The Pi-hole groups Sinko cannot work without (pb-box.js line 575). */
+/** The Pi-hole groups Sinko cannot work without (pb-box.js line 581). */
 const REQUIRED_GROUPS = ['pb-kids', 'pb-offline', 'pb-paused', 'pb-state'];
-/** pb-box.js hasSinkoGroups (line 576). */
+/** pb-box.js hasSinkoGroups (line 582). */
 export function hasSinkoGroups(groups: unknown): boolean {
   const names: Record<string, boolean> = {};
   ((groups || []) as ({ name?: unknown } | null)[]).forEach((g) => { if (g && g.name) names[g.name as string] = true; });
@@ -325,7 +334,7 @@ export function hasSinkoGroups(groups: unknown): boolean {
 }
 
 export type LinkKey = 'home' | 'issues' | 'releases' | 'privacy' | 'license' | 'support' | 'buy';
-/** pb-box.js safeLinks (line 583): only https links from links.json are shown; anything else is dropped. */
+/** pb-box.js safeLinks (line 589): only https links from links.json are shown; anything else is dropped. */
 export function safeLinks(raw: unknown): Partial<Record<LinkKey, string>> {
   const r = raw as Record<string, unknown> | null | undefined;
   const out: Partial<Record<LinkKey, string>> = {};
@@ -336,13 +345,13 @@ export function safeLinks(raw: unknown): Partial<Record<LinkKey, string>> {
   return out;
 }
 
-/** pb-box.js backupName (line 593): a file name for the download, the day (on this phone) in the name, nothing from the network. */
+/** pb-box.js backupName (line 599): a file name for the download, the day (on this phone) in the name, nothing from the network. */
 export function backupName(date: Date): string {
   const p = (n: number) => (n < 10 ? '0' : '') + n;
   return 'sinko-backup-' + date.getFullYear() + '-' + p(date.getMonth() + 1) + '-' + p(date.getDate()) + '.zip';
 }
 
-// ------------------------------------------------------------------ PBBox.timing (pb-box.js lines 610-615)
+// ------------------------------------------------------------------ PBBox.timing (pb-box.js lines 616-621)
 /** How long the page waits before it says something did not happen (ms). Mutable on purpose, so tests can shorten the waits. */
 export const timing = {
   checkOffline: 20000, checkSlow: 45000, powerStuck: 45000, powerStale: 60000, powerNoRestart: 180000, startLate: 90000, longDown: 600000,
@@ -354,7 +363,7 @@ export const timing = {
 };
 
 /**
- * pb-box.js requestTime (line 646). The time of a request for the box: milliseconds on the BOX's clock (`boxNowSec`, from the Date header
+ * pb-box.js requestTime (line 652). The time of a request for the box: milliseconds on the BOX's clock (`boxNowSec`, from the Date header
  * of its last answer), never the phone's, which can be anywhere. The box acts on a request only when that time is close to its own clock,
  * so the old requests inside a restored backup do not fire. The Date header counts whole seconds, so the milliseconds are made up: without
  * them two requests of one kind within a second (two phones) would carry the same marker.

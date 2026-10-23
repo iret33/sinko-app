@@ -14,9 +14,10 @@
 ## Where things are
 
 - `../sinko` is Sinko itself (https://github.com/iret33/sinko), the source of truth. Read only: never edit it.
-- `app/` routes (expo-router), `src/core` the ported logic, `src/api` HTTP to the box, `src/state` the model and stores,
-  `src/i18n` strings (English and Arabic, from Sinko's page), `src/ui` the design system, `mock/` the development box,
-  `test/` the tests. See [README.md](README.md) and [AGENTS.md](AGENTS.md) (Expo's own notes; routes are in `app/` here).
+- `app/` routes (expo-router), `src/core` the ported logic, `src/api` HTTP to the box (and the host rule: private IPv4 only),
+  `src/state` the model, stores and the way in (finding the box, claim, sign-in, sessions), `src/i18n` strings (`en.ts` and `ar.ts`:
+  Sinko's page's words, then the app's own; every string lives there), `src/ui` the design system, `src/screens` the screens,
+  `modules/sinko-net` the app's own native module (name lookups), `mock/` the development box, `test/` the tests. See [README.md](README.md) and [AGENTS.md](AGENTS.md) (Expo's own notes; routes are in `app/` here).
 - `MOCK-GAPS.md` lists what the mock box does not imitate.
 
 ## Before saying something is done

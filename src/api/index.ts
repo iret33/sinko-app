@@ -1,7 +1,9 @@
 // The client of the selected box. src/state sets it when a box is chosen (connectBox); everything else calls call().
+import { t } from '../i18n';
 import { ApiError, type CallOptions, type Client } from './client';
 
 export * from './client';
+export * from './hosts';
 
 let active: Client | null = null;
 
@@ -10,7 +12,7 @@ export function activeClient(): Client | null { return active; }
 
 /** call(method, path, options) against the selected box (see createClient). Rejects with status 0 when no box is selected. */
 export function call<T = unknown>(method: string, path: string, options?: CallOptions): Promise<T> {
-  if (!active) return Promise.reject(new ApiError(0, 'No box is selected.'));
+  if (!active) return Promise.reject(new ApiError(0, t('noBoxSelected')));
   return active.call<T>(method, path, options);
 }
 

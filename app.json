@@ -11,7 +11,11 @@
       "bundleIdentifier": "bh.ioai.sinko",
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocalNetworkUsageDescription": "Sinko talks to the Sinko box on your home Wi‑Fi.",
+        "NSLocalNetworkUsageDescription": "Sinko finds the Sinko box on your home Wi‑Fi and talks to it there, to show and change your family’s rules.",
+        "NSBonjourServices": [
+          "_sinko._tcp",
+          "_http._tcp"
+        ],
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         }
@@ -38,7 +42,19 @@
         }
       ],
       "expo-secure-store",
-      "expo-localization"
-    ]
+      [
+        "expo-localization",
+        {
+          "supportedLocales": [
+            "en",
+            "ar"
+          ]
+        }
+      ]
+    ],
+    "locales": {
+      "en": "./locales/en.json",
+      "ar": "./locales/ar.json"
+    }
   }
 }

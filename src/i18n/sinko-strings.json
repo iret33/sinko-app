@@ -1,7 +1,7 @@
 {
  "comment": "Copied from Sinko by npm run sync-strings (web/app.js STR, LIVE_STR, FIRST_STR; web/pb-box.js BOX_STR). Do not edit: change Sinko, then sync.",
  "sinkoVersion": "3.1.0",
- "commit": "67ff43fc24cf834fc12851eaffac18e91c586f8d",
+ "commit": "ec04916af0f86f6efa89daa512a6aad9cf04a302",
  "en": {
   "appName": "Sinko",
   "loginHint": "Sign in with the parent password chosen during setup.",

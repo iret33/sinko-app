@@ -4,7 +4,9 @@
 //   cookies       Set-Cookie: sid=... on signed-in answers, like Pi-hole, and a cookie without a sid header counts as a cookie sign-in
 //                 (reads work, writes need a CSRF token), so "the app never sends a cookie" can be tested. Every cookie seen is logged.
 //   two-factor    400 "No 2FA token found in JSON payload" when the code is missing, 401 with only {error:{message:"Invalid 2FA token"}}
-//                 when it is wrong, as FTL answers (the mock answers both with a session object).
+//                 when it is wrong and "Reused 2FA token" when it was accepted once already, as FTL answers (src/api/auth.c).
+//   sign-in 429s  "API seats exceeded" (every session taken) and "Rate-limiting login attempts" (too many wrong tries), each a switch.
+//   box.json      api, boxId and hostname (Sinko 3.2) can be set or taken away, and the Sinko groups hidden (setup not finished).
 //   devices       a device's lastQuery can be moved forward (and devices added), so the router and device checks can pass.
 //   scheduler     timers end and bedtime switches like bin/sinko Controller.tick, and update, check, restart and shut-down requests get the
 //                 outcome picked in the dev menu (mock/scheduler.mts).
@@ -41,7 +43,15 @@ export interface ProxyOptions {
 
 export interface Settings {
   totpCode: string | null;
+  /** The last code that was accepted: FTL refuses it again ("Reused 2FA token"). */
+  totpUsed: string | null;
   seatsFull: boolean;
+  /** Every sign-in answers 429 rate_limiting, as FTL does after too many wrong tries. */
+  rateLimited: boolean;
+  /** Fields put into /pb/box.json as the box serves it (null: the field is taken out). */
+  boxInfo: Record<string, unknown>;
+  /** false: GET /api/groups shows no pb-* group, like a box whose setup has not finished. */
+  installed: boolean;
   clientIp: string | null;
   skewSec: number;
   heartbeatAgeSec: number;
@@ -76,7 +86,8 @@ const ftlError = (key: string, message: string) => ({ error: { key, message, hin
 export async function startProxy(options: ProxyOptions): Promise<Proxy> {
   const up = options.upstreamPort;
   const admin = new Admin(up, PASSWORD);
-  const settings: Settings = { totpCode: null, seatsFull: false, clientIp: null, skewSec: 0, heartbeatAgeSec: 0 };
+  const settings: Settings = { totpCode: null, totpUsed: null, seatsFull: false, rateLimited: false, boxInfo: {}, installed: true, clientIp: null,
+    skewSec: 0, heartbeatAgeSec: 0 };
   // What the box says about itself, read once from the mock.
   const info = json(await request(up, 'GET', '/pb/box.json', { Accept: 'application/json' })) as Dict;
   const offsetText = typeof info.utcOffset === 'string' ? info.utcOffset : '';
@@ -183,10 +194,22 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
         return send(200, { ok: true, clientIp: settings.clientIp });
       case '/__dev__/totp':
         settings.totpCode = typeof b.code === 'string' && /^\d{6}$/.test(b.code) ? b.code : null;
+        settings.totpUsed = null;
         return send(200, { ok: true, totpCode: settings.totpCode });
       case '/__dev__/seats':
         settings.seatsFull = b.full === true;
         return send(200, { ok: true, seatsFull: settings.seatsFull });
+      case '/__dev__/rate-limit':
+        settings.rateLimited = b.on === true;
+        return send(200, { ok: true, rateLimited: settings.rateLimited });
+      case '/__dev__/box-info':
+        // { boxId, hostname, api, version, ...: a value to serve, or null to leave the field out }; { reset: true } serves the mock's own.
+        if (b.reset === true) settings.boxInfo = {};
+        for (const [k, v] of Object.entries(b)) if (k !== 'reset') settings.boxInfo[k] = v;
+        return send(200, { ok: true, boxInfo: settings.boxInfo });
+      case '/__dev__/installed':
+        settings.installed = b.done !== false;
+        return send(200, { ok: true, installed: settings.installed });
       case '/__dev__/clock':
         settings.skewSec = Number(b.skewSec) || 0;
         return send(200, { ok: true, skewSec: settings.skewSec });
@@ -265,6 +288,7 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
     }
 
     // ---- signing in: two-factor and full seats as FTL answers them
+    if (path === '/api/auth' && method === 'POST' && settings.rateLimited) return reply(429, ftlError('rate_limiting', 'Rate-limiting login attempts'));
     if (path === '/api/auth' && method === 'POST' && (settings.totpCode || settings.seatsFull)) {
       const a = await request(up, 'POST', '/api/auth', headers, body);
       const s = (json(a) as { session?: { valid?: boolean; sid?: string } }).session;
@@ -277,11 +301,17 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
       try { totp = (JSON.parse(body.toString('utf8') || '{}') as Dict).totp; } catch { totp = undefined; }
       const drop = () => request(up, 'DELETE', '/api/auth', { sid: s.sid as string }).catch(() => undefined);   // FTL never opened it
       if (settings.totpCode && (totp === undefined || totp === null)) { await drop(); return reply(400, ftlError('bad_request', 'No 2FA token found in JSON payload')); }
+      if (settings.totpCode && String(totp) === settings.totpUsed) {
+        await drop(); return reply(401, { error: { key: 'unauthorized', message: 'Reused 2FA token', hint: 'wait for new token' }, took: 0.0001 });
+      }
       if (settings.totpCode && String(totp) !== settings.totpCode) { await drop(); return reply(401, ftlError('unauthorized', 'Invalid 2FA token')); }
-      if (settings.seatsFull) { await drop(); return reply(429, ftlError('api_seats_exceeded', 'API seats exceeded')); }
+      if (settings.seatsFull) { await drop(); return reply(429, { error: { key: 'api_seats_exceeded', message: 'API seats exceeded', hint: 'increase webserver.api.max_sessions' }, took: 0.0001 }); }
+      if (settings.totpCode) settings.totpUsed = String(totp);
       admin.password = (JSON.parse(body.toString('utf8')) as { password: string }).password;
       seenSids.add(s.sid);
-      return reply(200, json(a), { 'Set-Cookie': cookieHeader(s.sid) });
+      const ok = json(a) as { session: Dict };
+      if (settings.totpCode) ok.session.totp = true;                         // FTL's session object says two-factor is on
+      return reply(200, ok, { 'Set-Cookie': cookieHeader(s.sid) });
     }
 
     // ---- the box
@@ -301,10 +331,14 @@ export async function startProxy(options: ProxyOptions): Promise<Proxy> {
         const j = json(a) as Dict;
         if (typeof j.at === 'number') j.at = Math.floor(j.at + settings.skewSec - settings.heartbeatAgeSec);
         if (typeof j.version === 'string') j.version = box.version;
+        for (const [k, v] of Object.entries(settings.boxInfo)) { if (v === null) delete j[k]; else j[k] = v; }
         data = Buffer.from(JSON.stringify(j));
+      } else if (path === '/api/groups' && !settings.installed) {
+        const j = json(a) as { groups?: { name?: string }[] };
+        data = Buffer.from(JSON.stringify({ ...j, groups: (j.groups || []).filter((g) => !(g.name || '').startsWith('pb-')) }));
       } else if (path === '/pb/version.txt') data = Buffer.from(box.version + '\n');
     }
-    if (path === '/api/auth' && method === 'GET' && a.status === 401 && settings.totpCode) {
+    if (path === '/api/auth' && method === 'GET' && settings.totpCode) {
       const j = json(a) as { session?: Dict };
       if (j.session) j.session.totp = true;
       data = Buffer.from(JSON.stringify(j));

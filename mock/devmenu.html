@@ -82,6 +82,26 @@
       <button data-post="/__dev__/seats" data-body='{"full":true}'>Too many sessions</button>
       <button data-post="/__dev__/seats" data-body='{"full":false}'>Seats free</button>
     </div>
+    <div class="row">
+      <button data-post="/__dev__/rate-limit" data-body='{"on":true}'>Too many wrong tries</button>
+      <button data-post="/__dev__/rate-limit" data-body='{"on":false}'>Tries allowed</button>
+    </div>
+    <div class="row"><label>Setup (open box)</label>
+      <button data-post="/__dev__/installed" data-body='{"done":false}'>not finished</button>
+      <button data-post="/__dev__/installed" data-body='{"done":true}'>finished</button>
+    </div>
+  </section>
+  <section>
+    <h2>box.json</h2>
+    <div class="row">
+      <button data-post="/__dev__/box-info" data-body='{"api":1,"boxId":"0123456789abcdef0123456789abcdef","hostname":"sinko"}'>Sinko 3.2 (api 1, boxId, hostname)</button>
+      <button data-post="/__dev__/box-info" data-body='{"api":null,"boxId":null,"hostname":null}'>Sinko 3.1 (none of them)</button>
+    </div>
+    <div class="row">
+      <button data-post="/__dev__/box-info" data-body='{"api":2}'>A newer contract (api 2)</button>
+      <button data-post="/__dev__/box-info" data-body='{"version":"3.0.4"}'>Version 3.0.4 (no learning)</button>
+      <button data-post="/__dev__/box-info" data-body='{"reset":true}'>As the mock says</button>
+    </div>
   </section>
   <section>
     <h2>Clock and scheduler</h2>

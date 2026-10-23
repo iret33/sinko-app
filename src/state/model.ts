@@ -10,6 +10,7 @@ import {
   type SinkoState,
 } from '../core';
 import { t } from '../i18n';
+import { stateWritable } from './compat';
 import { createStore, type Store } from './store';
 
 /** One app on the box: its catalog entry, its Pi-hole group, and whether children are kept from it now. */
@@ -124,7 +125,7 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
     const ok = [G.kids, G.offline, G.paused, G.state].every((n) => byName[n]);
     if (!ok) {
       M = null;
-      patch({ model: null, banner: t('notInstalled'), catalog, domainMap, boxInfo });
+      patch({ model: null, banner: t('waitBody'), catalog, domainMap, boxInfo });
       return null;
     }
     const cat = catalog;
@@ -182,6 +183,8 @@ export function createBoxSession(client: Client, options?: BoxSessionOptions): B
    * mutator does not touch, including the ones only the scheduler writes.
    */
   function writeState(mutator: (st: SinkoState) => void): Promise<void> {
+    // A box with a newer contract (box.json's api): writing back what this app can read would drop the keys it does not know (compat.ts).
+    if (!stateWritable(boxInfo)) return Promise.reject(new Error(t('appUpdateNeeded')));
     return call<{ groups?: Group[] }>('GET', '/api/groups/' + q(G.state)).then((j) => {
       const g = (j.groups || [])[0] || (M as Model).groups[G.state];
       const next = editState(g.comment, mutator);
