@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-title-en="Set up your Sinko box" data-title-ar="إعداد صندوق سينكو">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up your Sinko box</title>
+<meta name="description" content="Set up a Sinko box step by step, with no experience needed. In English and Arabic.">
+<meta name="theme-color" content="#0F766E">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<!-- The language before the first paint: ?lang=, then the last choice, then the phone's first language. -->
+<script>(function(){var l='en',h=document.documentElement,q=null,s=null;try{q=new URLSearchParams(location.search).get('lang')}catch(e){}try{s=localStorage.getItem('sinko.lang')}catch(e){}if(q==='ar'||q==='en'){l=q;try{localStorage.setItem('sinko.lang',q)}catch(e){}}else if(s==='ar'||s==='en'){l=s}else if(/^ar\b/i.test((navigator.languages&&navigator.languages[0])||navigator.language||'')){l='ar'}h.lang=l;h.dir=l==='ar'?'rtl':'ltr'})();</script>
+<script src="../links.js" defer></script>
+<script src="../site.js" defer></script>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="top">
+  <a href="../" data-keep-lang><span class="only-en" lang="en">← Sinko</span><span class="only-ar" lang="ar">→ سينكو</span></a>
+  <a class="lang only-en" href="?lang=ar" hreflang="ar" lang="ar">العربية</a>
+  <a class="lang only-ar" href="?lang=en" hreflang="en" lang="en">English</a>
+</nav>
+
+<header>
+  <div class="only-en" lang="en">
+    <h1>Set up your Sinko box</h1>
+    <p class="lead">Step by step, for anyone who has never set up a gadget before. It takes about 15 minutes, and you do it only once.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h1>إعداد صندوق سينكو</h1>
+    <p class="lead">خطوة بخطوة، لكل من لم يشغّل جهازًا كهذا من قبل. يستغرق نحو 15 دقيقة، ولا تفعله إلا مرة واحدة.</p>
+  </div>
+</header>
+
+<section class="card">
+  <div class="only-en" lang="en">
+    <h2>What you need</h2>
+    <ul>
+      <li>The Sinko box, its network cable and its USB cable.</li>
+      <li>Your home router: the box your internet company gave you, usually with small blinking lights.</li>
+      <li>Your phone, connected to your home Wi‑Fi.</li>
+      <li>The sticker under your router: it has the address and the password of the router’s settings (step 6).</li>
+    </ul>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>ما تحتاج إليه</h2>
+    <ul>
+      <li>صندوق سينكو، وكابل الشبكة وكابل USB المرفقان به.</li>
+      <li>الراوتر في بيتك: الجهاز الذي أعطتك إياه شركة الإنترنت، وعليه في الغالب أضواء صغيرة تومض.</li>
+      <li>هاتفك، متصلًا بشبكة Wi‑Fi في بيتك.</li>
+      <li>الملصق أسفل الراوتر: عليه عنوان إعدادات الراوتر وكلمة مرورها (الخطوة 6).</li>
+    </ul>
+  </div>
+</section>
+
+<ol class="steps">
+
+<li class="step card" id="step-1">
+  <div class="only-en" lang="en">
+    <h2>Plug in the box</h2>
+    <svg class="drawing" viewBox="0 0 360 190" role="img" aria-label="Drawing: the Sinko box beside the router, joined by a network cable, with a USB cable for power">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="10" y="62" width="130" height="56" rx="10"/><path d="M36 62 28 28M114 62l8-34"/>
+      </g>
+      <g style="fill:var(--lagoon)"><circle cx="34" cy="90" r="5"/><circle cx="52" cy="90" r="5"/><circle cx="70" cy="90" r="5"/></g>
+      <rect x="250" y="70" width="100" height="44" rx="10" style="fill:var(--lagoon)"/>
+      <path d="M300 82 314 95v11h-28V95z" fill="#fff"/>
+      <path d="M140 96h110" style="stroke:var(--lagoon)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M300 114v34" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <rect x="291" y="148" width="18" height="12" rx="2" fill="currentColor"/>
+      <g fill="currentColor" font-size="13" text-anchor="middle">
+        <text x="75" y="140" font-weight="700">Your router</text>
+        <text x="300" y="58" font-weight="700">Sinko box</text>
+        <text x="195" y="76">Network cable</text><text x="195" y="90">(LAN)</text>
+        <text x="300" y="180">USB cable (power)</text>
+      </g>
+    </svg>
+    <ol>
+      <li>Put the Sinko box beside your router, somewhere it can stay plugged in all the time.</li>
+      <li>Push one end of the <b>network cable</b> into the Sinko box until it clicks. Push the other end into a free socket on the back of the router marked <b>LAN</b> or numbered 1 to 4. Not the one marked WAN or Internet.</li>
+      <li>Plug the small end of the <b>USB cable</b> (USB‑C) into the Sinko box, and the large end into the USB socket on your router.</li>
+      <li>A light on the box comes on. The first start takes <b>about 5 minutes</b>: leave it alone until then.</li>
+    </ol>
+    <p class="tip">No USB socket on the router, or does the box keep switching off and on by itself? Use a phone charger of 5 V and at least 2 A instead.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>وصّل الصندوق</h2>
+    <svg class="drawing" viewBox="0 0 360 190" role="img" aria-label="رسم: صندوق سينكو بجانب الراوتر، يصل بينهما كابل شبكة، وكابل USB للكهرباء">
+      <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="10" y="62" width="130" height="56" rx="10"/><path d="M36 62 28 28M114 62l8-34"/>
+      </g>
+      <g style="fill:var(--lagoon)"><circle cx="34" cy="90" r="5"/><circle cx="52" cy="90" r="5"/><circle cx="70" cy="90" r="5"/></g>
+      <rect x="250" y="70" width="100" height="44" rx="10" style="fill:var(--lagoon)"/>
+      <path d="M300 82 314 95v11h-28V95z" fill="#fff"/>
+      <path d="M140 96h110" style="stroke:var(--lagoon)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M300 114v34" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <rect x="291" y="148" width="18" height="12" rx="2" fill="currentColor"/>
+      <g fill="currentColor" font-size="14" text-anchor="middle">
+        <text x="75" y="142" font-weight="700">الراوتر</text>
+        <text x="300" y="58" font-weight="700">صندوق سينكو</text>
+        <text x="195" y="76">كابل الشبكة</text><text x="195" y="90">(LAN)</text>
+        <text x="300" y="182">كابل USB (للكهرباء)</text>
+      </g>
+    </svg>
+    <ol>
+      <li>ضع صندوق سينكو بجانب الراوتر، في مكان يبقى فيه موصولًا طوال الوقت.</li>
+      <li>أدخل أحد طرفي <b>كابل الشبكة</b> في صندوق سينكو حتى تسمع صوت تثبيته. وأدخل الطرف الآخر في منفذ فارغ خلف الراوتر، مكتوب عليه <b>LAN</b> أو مرقّم من 1 إلى 4. لا تستخدم المنفذ المكتوب عليه WAN أو Internet.</li>
+      <li>أدخل الطرف الصغير من <b>كابل USB</b>، وهو USB‑C، في صندوق سينكو، والطرف الكبير في منفذ USB على الراوتر.</li>
+      <li>سيضيء مصباح على الصندوق. يستغرق أول تشغيل <b>نحو 5 دقائق</b>، فاتركه حتى ينتهي.</li>
+    </ol>
+    <p class="tip">لا يوجد منفذ USB في الراوتر، أو ينطفئ الصندوق ويعمل من تلقاء نفسه مرارًا؟ استخدم بدلًا من ذلك شاحن هاتف بقوة 5 فولت و2 أمبير على الأقل.</p>
+  </div>
+</li>
+
+<li class="step card" id="step-2">
+  <div class="only-en" lang="en">
+    <h2>Get the Sinko app</h2>
+    <p>Connect your phone to your <b>home Wi‑Fi</b>, not mobile data. Then install the app:</p>
+    <div class="links two">
+      <a class="btn" data-link="appStore" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+        <span><span class="t">App Store</span><span class="s ready">iPhone and iPad</span><span class="s soon">Coming soon</span></span>
+      </a>
+      <a class="btn" data-link="googlePlay" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
+        <span><span class="t">Google Play</span><span class="s ready">Android</span><span class="s soon">Coming soon</span></span>
+      </a>
+    </div>
+    <p class="tip">No app yet? Everything also works from the box’s own page: open Safari or Chrome and go to <b class="ltr">sinko.local</b>. Some buttons have other names there, but the steps are the same. Some Android phones open only the box’s number address (see <a href="#trouble">Something wrong?</a>).</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>نزّل تطبيق سينكو</h2>
+    <p>وصّل هاتفك بشبكة <b>Wi‑Fi في بيتك</b>، لا ببيانات الجوال. ثم نزّل التطبيق:</p>
+    <div class="links two">
+      <a class="btn" data-link="appStore" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg>
+        <span><span class="t">App Store</span><span class="s ready">آيفون وآيباد</span><span class="s soon">قريبًا</span></span>
+      </a>
+      <a class="btn" data-link="googlePlay" aria-disabled="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg>
+        <span><span class="t">Google Play</span><span class="s ready">أندرويد</span><span class="s soon">قريبًا</span></span>
+      </a>
+    </div>
+    <p class="tip">لا يوجد التطبيق بعد؟ كل شيء يعمل أيضًا من صفحة الصندوق نفسه: افتح Safari أو Chrome وانتقل إلى <b class="ltr">sinko.local</b>. لبعض الأزرار هناك أسماء أخرى، لكن الخطوات نفسها. وبعض هواتف أندرويد لا تفتح إلا عنوان الصندوق الرقمي (انظر <a href="#trouble">هل من خلل؟</a>).</p>
+  </div>
+</li>
+
+<li class="step card" id="step-3">
+  <div class="only-en" lang="en">
+    <h2>Find your box</h2>
+    <ol>
+      <li>Open the app. It shows <span class="say">Find your Sinko box</span> and looks for the box on your Wi‑Fi.</li>
+      <li>On iPhone, it asks to find devices on your local network: tap <b>Allow</b>. Without it, the app cannot see the box.</li>
+      <li>Your box appears under <span class="say">Found on this Wi‑Fi</span>. Tap <span class="say">Use this box</span>.</li>
+    </ol>
+    <p class="tip">Not there? Wait a minute and tap <span class="say">Look again</span>. Still nothing: under <span class="say">Not found? Type its address</span>, type <b class="ltr">sinko.local</b> and tap <span class="say">Connect</span>.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>اعثر على صندوقك</h2>
+    <ol>
+      <li>افتح التطبيق. ستظهر <span class="say">ابحث عن صندوق سينكو</span>، ويبحث التطبيق عن الصندوق في شبكة Wi‑Fi.</li>
+      <li>في آيفون، يطلب الإذن بالعثور على الأجهزة في شبكتك المحلية: اضغط <b>السماح</b>. فبدونه لا يرى التطبيق الصندوق.</li>
+      <li>يظهر صندوقك تحت <span class="say">وُجد على هذه الشبكة</span>. اضغط <span class="say">استخدم هذا الصندوق</span>.</li>
+    </ol>
+    <p class="tip">لم يظهر؟ انتظر دقيقة واضغط <span class="say">ابحث مجددًا</span>. وإن لم يظهر بعد: تحت <span class="say">لم تجده؟ اكتب عنوانه</span> اكتب <b class="ltr">sinko.local</b> واضغط <span class="say">اتصال</span>.</p>
+  </div>
+</li>
+
+<li class="step card" id="step-4">
+  <div class="only-en" lang="en">
+    <h2>Choose your parent password</h2>
+    <ol>
+      <li>The app shows <span class="say">Welcome to Sinko</span>. Choose a password of at least 8 characters that your children cannot guess.</li>
+      <li>Type it twice, then tap <span class="say">Choose password and continue</span>.</li>
+      <li>Write it down somewhere safe, and keep it to yourself. You use it to sign in, in the app and on the box’s page. If the app asks you to sign in, switch on <span class="say">Keep me signed in</span> so that it signs in by itself next time.</li>
+    </ol>
+    <p class="warn"><strong>Do this straight away.</strong> Until a password is chosen, anyone on your Wi‑Fi could choose it. If the app says <span class="say">This box already has a password</span> and you did not choose one, someone else got there first: stop here and ask whoever sold you the box for help.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>اختر كلمة مرور الوالدين</h2>
+    <ol>
+      <li>يعرض التطبيق <span class="say">مرحبًا بك في سينكو</span>. اختر كلمة مرور من 8 أحرف على الأقل لا يستطيع أطفالك تخمينها.</li>
+      <li>اكتبها مرتين، ثم اضغط <span class="say">اختيار كلمة المرور والمتابعة</span>.</li>
+      <li>اكتبها في مكان آمن، ولا تخبر بها أحدًا. ستستخدمها لتسجيل الدخول في التطبيق وفي صفحة الصندوق. وإن طلب منك التطبيق تسجيل الدخول، فشغّل <span class="say">إبقائي مسجّل الدخول</span> حتى يسجّل الدخول من تلقاء نفسه في المرة القادمة.</li>
+    </ol>
+    <p class="warn"><strong>افعل ذلك فورًا.</strong> فقبل اختيار كلمة المرور يستطيع أي شخص على شبكة Wi‑Fi في بيتك أن يختارها. وإن قال التطبيق <span class="say">لهذا الصندوق كلمة مرور بالفعل</span> ولم تخترها أنت، فقد سبقك إليها أحد: توقف هنا واطلب المساعدة ممن باعك الصندوق.</p>
+  </div>
+</li>
+
+<li class="step card" id="step-5">
+  <div class="only-en" lang="en">
+    <h2>Agree to the terms of use</h2>
+    <ol>
+      <li><span class="say">Before you start</span> shows the terms of use. Read them.</li>
+      <li>The two choices under <span class="say">Your choices</span> can stay as they are. You can change them at any time in <span class="say">My box</span>.</li>
+      <li>Tap <span class="say">I agree, continue</span>.</li>
+    </ol>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>وافق على شروط الاستخدام</h2>
+    <ol>
+      <li>تعرض <span class="say">قبل أن تبدأ</span> شروط الاستخدام. اقرأها.</li>
+      <li>يمكن أن يبقى الخياران تحت <span class="say">خياراتك</span> كما هما. ويمكنك تغييرهما في أي وقت من <span class="say">صندوقي</span>.</li>
+      <li>اضغط <span class="say">أوافق، متابعة</span>.</li>
+    </ol>
+  </div>
+</li>
+
+<li class="step card" id="step-6">
+  <div class="only-en" lang="en">
+    <h2>Tell your router to use Sinko</h2>
+    <p>This one setting sends every phone and tablet at home through the box. It is the hardest step, so take your time.</p>
+    <ol>
+      <li>In the app, the <span class="say">Get started</span> list on Home: tap <span class="say">Show me how</span>. The app shows the <b>box’s address</b>, a number such as <b class="ltr">192.168.1.50</b>. Write it down.</li>
+      <li>Under <span class="say">Which router do you have?</span>, pick yours. If the app has no guide for it yet, the steps below work on every router.</li>
+      <li>Open the router’s settings: in your phone’s browser, type the address on the router’s sticker (often <b class="ltr">192.168.1.1</b> or <b class="ltr">192.168.0.1</b>) and sign in with the password on the sticker.</li>
+      <li>Open the <b>LAN</b> or <b>DHCP</b> settings and find <b>DNS server</b>. Set it to the box’s address, and only that one. Leave the second DNS server empty: if another one is listed, devices use it to go around the box. (If the router will not save it empty, type the box’s address there too.)</li>
+      <li>Find <b>DHCP reservation</b>, <b>Static lease</b> or <b>Address reservation</b>, and reserve the box’s address so that it never changes.</li>
+      <li>If you see <b>IPv6 DNS</b> settings, turn them off or set them to the box as well.</li>
+      <li>Save. If the router asks to restart, let it.</li>
+      <li>On each child’s phone, tablet, laptop and game console, turn Wi‑Fi off and on again, so that it picks up the new setting.</li>
+    </ol>
+    <p class="tip"><b>Did it work?</b> The app checks by itself. When it says <span class="say">A device at home uses the box: the router points to it.</span>, this step is done.</p>
+    <p class="tip"><b>Cannot change your router?</b> Some routers do not allow it. Tap <span class="say">Cannot change the router?</span> in the app: it shows how to set Sinko on each child’s device instead.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>اجعل الراوتر يستخدم سينكو</h2>
+    <p>هذا الإعداد الواحد يجعل كل هاتف وجهاز لوحي في البيت يمرّ عبر الصندوق. إنها أصعب خطوة، فخذ وقتك.</p>
+    <ol>
+      <li>في التطبيق، في قائمة <span class="say">ابدأ من هنا</span> في الشاشة الرئيسية: اضغط <span class="say">أرني كيف</span>. يعرض التطبيق <b>عنوان الصندوق</b>، وهو رقم مثل <b class="ltr">192.168.1.50</b>. اكتبه عندك.</li>
+      <li>تحت <span class="say">ما الراوتر الذي لديك؟</span> اختر الراوتر الذي لديك. وإن لم يكن في التطبيق دليل له بعد، فالخطوات التالية تصلح لكل راوتر.</li>
+      <li>افتح إعدادات الراوتر: اكتب في متصفح هاتفك العنوان المكتوب على ملصق الراوتر (وكثيرًا ما يكون <b class="ltr">192.168.1.1</b> أو <b class="ltr">192.168.0.1</b>)، وسجّل الدخول بكلمة المرور المكتوبة على الملصق.</li>
+      <li>افتح إعدادات <b>LAN</b> أو <b>DHCP</b>، وابحث عن <b>خادم DNS</b>. اجعله عنوان الصندوق، وهذا العنوان وحده. واترك خادم DNS الثاني فارغًا: فإن وُجد خادم آخر، استخدمته الأجهزة لتتجاوز الصندوق. (وإن رفض الراوتر الحفظ وهو فارغ، فاكتب فيه عنوان الصندوق أيضًا.)</li>
+      <li>ابحث عن <b>DHCP reservation</b> أو <b>Static lease</b> أو حجز العنوان، واحجز عنوان الصندوق حتى لا يتغير أبدًا.</li>
+      <li>إن رأيت إعدادات <b>DNS خاصة بشبكة IPv6</b>، فأوقفها أو اجعلها عنوان الصندوق أيضًا.</li>
+      <li>احفظ. وإن طلب الراوتر إعادة التشغيل، فدعه يفعل.</li>
+      <li>على كل هاتف وجهاز لوحي وحاسوب وجهاز ألعاب يستخدمه أطفالك، أطفئ Wi‑Fi ثم شغّله مجددًا، حتى يأخذ الإعداد الجديد.</li>
+    </ol>
+    <p class="tip"><b>هل نجح ذلك؟</b> يتحقق التطبيق من تلقاء نفسه. وحين يقول <span class="say">جهاز في البيت يستخدم الصندوق: الراوتر يوجّه الأجهزة إليه.</span> تكون هذه الخطوة قد تمّت.</p>
+    <p class="tip"><b>لا تستطيع تغيير الراوتر؟</b> بعض أجهزة الراوتر لا تسمح بذلك. اضغط <span class="say">لا تستطيع تغيير إعدادات الراوتر؟</span> في التطبيق: يشرح كيف تضبط سينكو على جهاز كل طفل بدلًا من ذلك.</p>
+  </div>
+</li>
+
+<li class="step card" id="step-7">
+  <div class="only-en" lang="en">
+    <h2>Add each child’s device</h2>
+    <ol>
+      <li>On the child’s device, turn off the private Wi‑Fi address for your home network, so that the box always knows it. iPhone and iPad: Settings › Wi‑Fi › tap ⓘ next to your network › set <b>Private Wi‑Fi Address</b> to Off. Android: Settings › Wi‑Fi › your network › Privacy › <b>Use device MAC</b>.</li>
+      <li>On the child’s device, open any website, so that the box sees it.</li>
+      <li>On your phone, in the app: <span class="say">Devices</span>, then <span class="say">Add device</span>. Pick that device from the list, give it a name such as “Sara’s iPad”, and save.</li>
+      <li>Do this for every device your children use.</li>
+    </ol>
+    <p class="tip">Device not in the list? Wait a minute, open a website on it again, and try once more.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>أضف جهاز كل طفل</h2>
+    <ol>
+      <li>على جهاز الطفل، أوقف عنوان Wi‑Fi الخاص لشبكة بيتك، حتى يتعرّف الصندوق على الجهاز دائمًا. في آيفون وآيباد: الإعدادات ‹ Wi‑Fi ‹ اضغط ⓘ بجانب شبكتك ‹ أوقف <b>عنوان Wi‑Fi خاص</b>. وفي أندرويد: الإعدادات ‹ Wi‑Fi ‹ شبكتك ‹ الخصوصية ‹ <b>استخدام عنوان MAC للجهاز</b>.</li>
+      <li>على جهاز الطفل، افتح أي موقع حتى يراه الصندوق.</li>
+      <li>في التطبيق على هاتفك: <span class="say">الأجهزة</span> ثم <span class="say">إضافة جهاز</span>. اختر ذلك الجهاز من القائمة، وأعطه اسمًا مثل «آيباد سارة»، واحفظ.</li>
+      <li>كرّر ذلك لكل جهاز يستخدمه أطفالك.</li>
+    </ol>
+    <p class="tip">الجهاز ليس في القائمة؟ انتظر دقيقة، وافتح عليه موقعًا مرة أخرى، ثم حاول مجددًا.</p>
+  </div>
+</li>
+
+<li class="step card" id="step-8">
+  <div class="only-en" lang="en">
+    <h2>Choose your rules</h2>
+    <ul>
+      <li><span class="say">Apps</span>: tap an app to block or allow it.</li>
+      <li><span class="say">Home</span>: <span class="say">Homework</span>, <span class="say">Free time</span> or an <span class="say">Offline break</span> for a while, and <span class="say">Bedtime</span>, which turns the internet off at night by itself.</li>
+      <li><b>Check that it works:</b> block YouTube, then try to open YouTube on your child’s device. It should not load. Apps that were already open can take a few minutes to stop.</li>
+    </ul>
+    <p class="tip">Sinko does not make the internet safe by itself: a phone on mobile data or a VPN does not use it. Use it together with Screen Time (iPhone) or Family Link (Android).</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>اختر قواعدك</h2>
+    <ul>
+      <li><span class="say">التطبيقات</span>: اضغط على التطبيق لحظره أو للسماح به.</li>
+      <li><span class="say">الرئيسية</span>: <span class="say">وقت الدراسة</span> أو <span class="say">وقت حر</span> أو <span class="say">استراحة من الإنترنت</span> لبعض الوقت، و<span class="say">وقت النوم</span> الذي يقطع الإنترنت ليلًا من تلقاء نفسه.</li>
+      <li><b>تأكّد أنه يعمل:</b> احظر يوتيوب، ثم حاول فتح يوتيوب على جهاز طفلك: يجب ألا يعمل. قد تحتاج التطبيقات المفتوحة من قبل بضع دقائق حتى تتوقف.</li>
+    </ul>
+    <p class="tip">سينكو وحده لا يجعل الإنترنت آمنًا: الهاتف المتصل بالبيانات أو بشبكة VPN لا يستخدمه. استخدمه مع «مدة استخدام الجهاز» في آيفون أو Family Link في أندرويد.</p>
+  </div>
+</li>
+
+</ol>
+
+<section class="card" id="good-to-know">
+  <div class="only-en" lang="en">
+    <h2>Good to know</h2>
+    <ul>
+      <li><b>Keep the box plugged in all the time.</b> While it is off, the devices at home cannot reach the internet, because the router sends them to the box. Plug it back in and give it two minutes.</li>
+      <li><b>Updates:</b> in <span class="say">My box</span>, tap <span class="say">Update now</span>, or switch on <span class="say">Update automatically at night</span>.</li>
+      <li><b>Keep a backup:</b> in <span class="say">My box</span>, tap <span class="say">Download backup</span>. It brings your devices and rules back if the box ever has to be set up again. The file also holds the parent password: keep it private and never share it.</li>
+      <li><b>Something not right?</b> Unplug the box, wait ten seconds, plug it in again and give it two minutes.</li>
+    </ul>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>من المفيد أن تعرف</h2>
+    <ul>
+      <li><b>أبقِ الصندوق موصولًا طوال الوقت.</b> فإذا انطفأ، لا تستطيع أجهزة البيت الوصول إلى الإنترنت، لأن الراوتر يوجّهها إلى الصندوق. أعد توصيله وانتظر دقيقتين.</li>
+      <li><b>التحديثات:</b> في <span class="say">صندوقي</span> اضغط <span class="say">حدّث الآن</span>، أو شغّل <span class="say">التحديث التلقائي ليلًا</span>.</li>
+      <li><b>احتفظ بنسخة احتياطية:</b> في <span class="say">صندوقي</span> اضغط <span class="say">تنزيل نسخة احتياطية</span>. فهي تعيد أجهزتك وقواعدك إن احتجت يومًا إلى إعداد الصندوق من جديد. ويحتوي الملف أيضًا على كلمة مرور الوالدين: احتفظ به لنفسك ولا تشاركه مع أحد.</li>
+      <li><b>هل من خلل؟</b> افصل الصندوق عن الكهرباء، وانتظر عشر ثوانٍ، ثم أعد توصيله وانتظر دقيقتين.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card" id="trouble">
+  <h2><span class="only-en" lang="en">Something wrong?</span><span class="only-ar" lang="ar">هل من خلل؟</span></h2>
+
+  <details>
+    <summary><span class="only-en" lang="en">The app cannot find the box</span><span class="only-ar" lang="ar">لا يجد التطبيق الصندوق</span></summary>
+    <div class="only-en" lang="en">
+      <ul>
+        <li>Is your phone on your home Wi‑Fi, not mobile data?</li>
+        <li>Did you let Sinko use your home network? iPhone: Settings › Sinko › switch on <b>Local Network</b>. Android: Settings › Apps › Sinko › Permissions.</li>
+        <li>Is the light on the box on, and is the network cable in a LAN socket of the router? Give it 5 minutes the first time, and two minutes after that.</li>
+        <li>Find the box’s number address: in the router’s settings, look for a list called <b>Connected devices</b>, <b>Attached devices</b> or <b>DHCP clients</b>, and find the device named <b class="ltr">sinko</b>. Its address is four numbers with dots, such as <b class="ltr">192.168.1.50</b>. Type it under <span class="say">Not found? Type its address</span>.</li>
+      </ul>
+    </div>
+    <div class="only-ar" lang="ar">
+      <ul>
+        <li>هل هاتفك متصل بشبكة Wi‑Fi في بيتك، لا ببيانات الجوال؟</li>
+        <li>هل سمحت لسينكو باستخدام شبكة بيتك؟ في آيفون: الإعدادات ‹ سينكو ‹ شغّل <b>الشبكة المحلية</b>. وفي أندرويد: الإعدادات ‹ التطبيقات ‹ سينكو ‹ الأذونات.</li>
+        <li>هل مصباح الصندوق مضاء، وكابل الشبكة في منفذ LAN في الراوتر؟ امنحه 5 دقائق في أول مرة، ودقيقتين بعد ذلك.</li>
+        <li>اعثر على عنوان الصندوق الرقمي: في إعدادات الراوتر ابحث عن قائمة باسم <b>الأجهزة المتصلة</b> أو <b>Connected devices</b> أو <b>DHCP clients</b>، وابحث فيها عن الجهاز الذي اسمه <b class="ltr">sinko</b>. عنوانه أربعة أرقام بينها نقاط، مثل <b class="ltr">192.168.1.50</b>. اكتبه تحت <span class="say">لم تجده؟ اكتب عنوانه</span>.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">It says “This box already has a password”</span><span class="only-ar" lang="ar">يقول «لهذا الصندوق كلمة مرور بالفعل»</span></summary>
+    <div class="only-en" lang="en"><p>If you chose the password yourself, sign in with it. If not, someone else on your home network chose it first. Do not go on: the box’s memory card has to be set up again (re-flashed). Ask whoever sold you the box.</p></div>
+    <div class="only-ar" lang="ar"><p>إن كنت اخترت كلمة المرور بنفسك، فسجّل الدخول بها. وإن لم تكن، فقد اختارها شخص آخر على شبكة بيتك قبلك. لا تكمل: يجب إعادة كتابة بطاقة الذاكرة في الصندوق. اطلب المساعدة ممن باعك الصندوق.</p></div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">I forgot the parent password</span><span class="only-ar" lang="ar">نسيت كلمة مرور الوالدين</span></summary>
+    <div class="only-en" lang="en"><p>Nobody can open the box without it, not even the seller. The box’s memory card has to be re-flashed and the box set up again. With a backup, your devices and rules come back: choose a new password, then <span class="say">Restore</span> in <span class="say">My box</span>.</p></div>
+    <div class="only-ar" lang="ar"><p>لا يستطيع أحد فتح الصندوق بدونها، ولا حتى البائع. يجب إعادة كتابة بطاقة الذاكرة في الصندوق وإعداده من جديد. ومع نسخة احتياطية تعود أجهزتك وقواعدك: اختر كلمة مرور جديدة، ثم <span class="say">استعادة</span> في <span class="say">صندوقي</span>.</p></div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">I blocked an app, but it still works</span><span class="only-ar" lang="ar">حظرت تطبيقًا لكنه ما زال يعمل</span></summary>
+    <div class="only-en" lang="en">
+      <ul>
+        <li>On the child’s device, turn Wi‑Fi off and on, and close the app completely.</li>
+        <li>Is the device added under <span class="say">Devices</span>?</li>
+        <li>In the router, is the DNS server the box’s address, and only that?</li>
+        <li>On Android, set <b>Private DNS</b> (Settings, under Network or Connections) to Off or Automatic.</li>
+        <li>On mobile data, a VPN or iCloud Private Relay, the device does not use the box.</li>
+      </ul>
+    </div>
+    <div class="only-ar" lang="ar">
+      <ul>
+        <li>على جهاز الطفل، أطفئ Wi‑Fi وشغّله، وأغلق التطبيق تمامًا.</li>
+        <li>هل الجهاز مضاف في <span class="say">الأجهزة</span>؟</li>
+        <li>في الراوتر، هل خادم DNS هو عنوان الصندوق، وهو وحده؟</li>
+        <li>في أندرويد، اجعل <b>DNS الخاص</b> (في الإعدادات تحت «الشبكة» أو «الاتصالات») على «إيقاف» أو «تلقائي».</li>
+        <li>مع بيانات الجوال أو VPN أو «مرحّل iCloud الخاص» لا يستخدم الجهاز الصندوق.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">The internet stopped working at home</span><span class="only-ar" lang="ar">توقف الإنترنت في البيت</span></summary>
+    <div class="only-en" lang="en">
+      <ul>
+        <li>Is the box plugged in, with its light on? While it is off, devices cannot reach the internet. Unplug it, wait ten seconds, plug it in and give it two minutes.</li>
+        <li>Still nothing? Set the router’s DNS server back to what it was (often Automatic) to get the internet back, then look for help.</li>
+      </ul>
+    </div>
+    <div class="only-ar" lang="ar">
+      <ul>
+        <li>هل الصندوق موصول ومصباحه مضاء؟ فإذا انطفأ لا تصل الأجهزة إلى الإنترنت. افصله عن الكهرباء، وانتظر عشر ثوانٍ، ثم أعد توصيله وانتظر دقيقتين.</li>
+        <li>ما زال لا يعمل؟ أعد خادم DNS في الراوتر إلى ما كان عليه (وكثيرًا ما يكون «تلقائي») ليعود الإنترنت، ثم اطلب المساعدة.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">The power went off during an update</span><span class="only-ar" lang="ar">انقطعت الكهرباء أثناء التحديث</span></summary>
+    <div class="only-en" lang="en"><p>Leave the box plugged in for a quarter of an hour: it usually puts itself right. If <span class="say">My box</span> still says the update did not finish after an hour, tap <span class="say">Update now</span> or <span class="say">Try again</span> if it offers it.</p></div>
+    <div class="only-ar" lang="ar"><p>اترك الصندوق موصولًا ربع ساعة: فهو يصلح نفسه في الغالب. وإن ظلّت <span class="say">صندوقي</span> تقول إن التحديث لم يكتمل بعد مرور ساعة، فاضغط <span class="say">حدّث الآن</span> أو <span class="say">حاول مجددًا</span> إن ظهر لك.</p></div>
+  </details>
+
+  <details>
+    <summary><span class="only-en" lang="en">How do I stop using Sinko?</span><span class="only-ar" lang="ar">كيف أتوقف عن استخدام سينكو؟</span></summary>
+    <div class="only-en" lang="en"><p>Set the router’s DNS server back to what it was, then unplug the box. In that order: the other way round, the home has no internet until the router is changed.</p></div>
+    <div class="only-ar" lang="ar"><p>أعد خادم DNS في الراوتر إلى ما كان عليه، ثم افصل الصندوق. بهذا الترتيب: فإن فعلت العكس، بقي البيت بلا إنترنت حتى تغيّر إعداد الراوتر.</p></div>
+  </details>
+</section>
+
+<section class="card" id="ai">
+  <div class="only-en" lang="en">
+    <h2>Stuck? Ask an AI to help</h2>
+    <p>Copy this message into any AI assistant, such as ChatGPT, Claude or Gemini. It tells the assistant how Sinko is set up, so that it can guide you one step at a time. Fill in the lines in [brackets] first.</p>
+    <p class="warn"><strong>Never type a password into an AI chat:</strong> not your parent password, not your Wi‑Fi password, not your router’s password. If you send a photo of a screen, cover any password first.</p>
+    <label for="prompt-en" class="muted">The message</label>
+    <textarea id="prompt-en" class="prompt" spellcheck="false">Please help me set up Sinko, a parental-controls box, at home. I am not technical. Guide me one step at a time in simple words, wait until I say a step is done before the next one, and ask me what I see on my screen when I am stuck.
+
+About Sinko: a small box that connects to my home router with a network cable. It is a DNS filter (built on Pi-hole) with parental controls: block apps, homework time, bedtime. It only works for devices on my home Wi-Fi that use it for DNS. I control it with the Sinko app (iPhone or Android), or from the box's own page in a browser at http://sinko.local. The full guide: https://iret33.github.io/sinko-app/guide/
+
+The setup, in order:
+1. Network cable from the box into a LAN socket of the router (not WAN or Internet), then power: the USB-C cable into the router's USB socket, or a 5 V, 2 A phone charger. The first start takes about 5 minutes.
+2. My phone on the home Wi-Fi, not mobile data. On iPhone, I allow the app to find devices on the local network.
+3. In the app: "Find your Sinko box", then "Use this box". If it is not listed: I type sinko.local, or the box's number address from the router's list of connected devices, under "Not found? Type its address".
+4. I choose a parent password of at least 8 characters straight away. If the app says "This box already has a password" and I did not choose one, someone else got there first: I must stop and ask the seller.
+5. I read the terms of use, then "I agree, continue".
+6. In the router's settings (LAN or DHCP), I set the DNS server to the box's number address, such as 192.168.1.50, and nothing else: no second DNS server. I reserve that address for the box (DHCP reservation or static lease), and turn IPv6 DNS off or set it to the box too. I save, then turn Wi-Fi off and on on each child's device. The app says "A device at home uses the box" when this works. If the router cannot be changed, "Cannot change the router?" in the app shows how to set Sinko on each device by hand (on Android, Private DNS must be Off or Automatic).
+7. On each child's device, I turn off the private Wi-Fi address for the home network and open a website. Then in the app: "Devices", "Add device", pick it and name it.
+
+About me:
+- My phone: [iPhone or Android]
+- My internet company and router: [for example Batelco, Zain or stc, and the model on the router's sticker]
+- The step I am on, and what I see: [describe it]
+
+Rules for you: never ask me for a password (the parent password, the Wi-Fi password or the router's password), and remind me to cover passwords in any photo I send. Router menus differ: if you are not sure where a setting is on my router, say so and ask me what I see instead of guessing. Do not suggest router changes other than the ones above. Sinko does not cover mobile data or a VPN: it works alongside Screen Time (iPhone) or Family Link (Android).</textarea>
+    <p><button type="button" class="copy" data-copy="prompt-en">Copy the message</button><span class="copied" role="status" hidden data-done="Copied" data-select="Selected: copy it from the menu">Copied</span></p>
+    <p class="muted">An AI can be wrong, most of all about router menus. If what it says does not match your screen, tell it what you see.</p>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>توقفت؟ اطلب المساعدة من الذكاء الاصطناعي</h2>
+    <p>انسخ هذه الرسالة والصقها في أي مساعد ذكاء اصطناعي، مثل ChatGPT أو Claude أو Gemini. فهي تشرح له طريقة إعداد سينكو، حتى يرشدك خطوة بخطوة. املأ الأسطر التي بين [قوسين] أولًا.</p>
+    <p class="warn"><strong>لا تكتب أي كلمة مرور في محادثة مع الذكاء الاصطناعي:</strong> لا كلمة مرور الوالدين، ولا كلمة مرور الواي فاي، ولا كلمة مرور الراوتر. وإن أرسلت صورة لشاشة، فغطِّ أي كلمة مرور فيها أولًا.</p>
+    <label for="prompt-ar" class="muted">الرسالة</label>
+    <textarea id="prompt-ar" class="prompt" spellcheck="false">ساعدني من فضلك في إعداد سينكو، وهو صندوق للرقابة الأبوية، في بيتي. أنا لست خبيرًا في التقنية. أرشدني خطوة واحدة في كل مرة بكلمات بسيطة، وانتظر حتى أقول إنني أنهيت الخطوة قبل أن تنتقل إلى التالية، واسألني عمّا أراه على الشاشة إذا توقفت. وأجبني باللغة العربية.
+
+عن سينكو: صندوق صغير يتصل بالراوتر في بيتي بكابل شبكة. وهو مرشّح DNS (مبنيّ على Pi‑hole) فيه رقابة أبوية: حظر التطبيقات ووقت الدراسة ووقت النوم. ولا يعمل إلا على الأجهزة المتصلة بشبكة Wi‑Fi في بيتي والتي تستخدمه لـ DNS. أتحكم فيه من تطبيق سينكو (آيفون أو أندرويد)، أو من صفحة الصندوق في المتصفح على العنوان http://sinko.local. الدليل الكامل: https://iret33.github.io/sinko-app/guide/?lang=ar
+
+خطوات الإعداد بالترتيب:
+1. كابل الشبكة من الصندوق إلى منفذ LAN في الراوتر (لا WAN ولا Internet)، ثم الكهرباء: كابل USB‑C في منفذ USB في الراوتر، أو شاحن هاتف 5 فولت و2 أمبير. يستغرق أول تشغيل نحو 5 دقائق.
+2. هاتفي متصل بشبكة Wi‑Fi في البيت، لا ببيانات الجوال. وفي آيفون أسمح للتطبيق بالعثور على الأجهزة في الشبكة المحلية.
+3. في التطبيق: «ابحث عن صندوق سينكو» ثم «استخدم هذا الصندوق». وإن لم يظهر: أكتب sinko.local، أو عنوان الصندوق الرقمي من قائمة الأجهزة المتصلة في الراوتر، تحت «لم تجده؟ اكتب عنوانه».
+4. أختار فورًا كلمة مرور للوالدين من 8 أحرف على الأقل. وإن قال التطبيق «لهذا الصندوق كلمة مرور بالفعل» ولم أخترها أنا، فقد سبقني إليها أحد: عليّ أن أتوقف وأطلب المساعدة من البائع.
+5. أقرأ شروط الاستخدام، ثم «أوافق، متابعة».
+6. في إعدادات الراوتر (LAN أو DHCP) أجعل خادم DNS عنوان الصندوق الرقمي، مثل 192.168.1.50، ولا شيء غيره: بلا خادم DNS ثانٍ. وأحجز هذا العنوان للصندوق (DHCP reservation أو Static lease)، وأوقف DNS الخاص بشبكة IPv6 أو أجعله الصندوق أيضًا. أحفظ، ثم أطفئ Wi‑Fi وأشغّله على كل جهاز من أجهزة الأطفال. ويقول التطبيق «جهاز في البيت يستخدم الصندوق» حين ينجح ذلك. وإن تعذّر تغيير الراوتر، فإن «لا تستطيع تغيير إعدادات الراوتر؟» في التطبيق يشرح كيف أضبط سينكو على كل جهاز يدويًا (وفي أندرويد يجب أن يكون «DNS الخاص» على «إيقاف» أو «تلقائي»).
+7. على كل جهاز طفل، أوقف عنوان Wi‑Fi الخاص لشبكة البيت وأفتح أي موقع. ثم في التطبيق: «الأجهزة» ثم «إضافة جهاز»، وأختاره وأسمّيه.
+
+عنّي:
+- هاتفي: [آيفون أو أندرويد]
+- شركة الإنترنت والراوتر: [مثل بتلكو أو زين أو stc، والطراز المكتوب على ملصق الراوتر]
+- الخطوة التي وصلت إليها وما أراه: [اكتب ما تراه]
+
+قواعد لك: لا تطلب مني أي كلمة مرور أبدًا (كلمة مرور الوالدين أو كلمة مرور الواي فاي أو كلمة مرور الراوتر)، وذكّرني بأن أغطي كلمات المرور في أي صورة أرسلها. قوائم الراوتر تختلف: إن لم تكن متأكدًا من مكان إعداد ما في الراوتر عندي، فقل ذلك واسألني عمّا أراه بدل أن تخمّن. لا تقترح تغييرات في الراوتر غير المذكورة أعلاه. سينكو لا يشمل بيانات الجوال ولا VPN: فهو يعمل مع «مدة استخدام الجهاز» في آيفون أو Family Link في أندرويد.</textarea>
+    <p><button type="button" class="copy" data-copy="prompt-ar">انسخ الرسالة</button><span class="copied" role="status" hidden data-done="تم النسخ" data-select="تم التحديد: انسخها من القائمة">تم النسخ</span></p>
+    <p class="muted">قد يخطئ الذكاء الاصطناعي، ولا سيما في قوائم الراوتر. وإن لم يطابق كلامه ما تراه على شاشتك، فأخبره بما تراه.</p>
+  </div>
+</section>
+
+<section class="card" data-needs="help" hidden>
+  <div class="only-en" lang="en">
+    <h2>Still stuck?</h2>
+    <p>Tell us what you see. A screenshot of <span class="say">My box</span> and of your router’s list of connected devices helps most.</p>
+    <div class="links"><a class="btn main" data-link="help"><span><span class="t">Get help</span></span></a></div>
+  </div>
+  <div class="only-ar" lang="ar">
+    <h2>ما زلت متوقفًا؟</h2>
+    <p>أخبرنا بما تراه. أكثر ما يساعدنا صورة لشاشة <span class="say">صندوقي</span> ولقائمة الأجهزة المتصلة في الراوتر.</p>
+    <div class="links"><a class="btn main" data-link="help"><span><span class="t">اطلب المساعدة</span></span></a></div>
+  </div>
+</section>
+
+<footer class="foot">
+  <p class="only-en" lang="en"><a href="../" data-keep-lang>Get the app</a> · <a href="https://iret33.github.io/sinko/">Sinko website</a></p>
+  <p class="only-ar" lang="ar"><a href="../" data-keep-lang>نزّل التطبيق</a> · <a href="https://iret33.github.io/sinko/?lang=ar">موقع سينكو</a></p>
+</footer>
+
+</div>
+</body>
+</html>
